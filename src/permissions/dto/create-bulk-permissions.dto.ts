@@ -4,7 +4,10 @@ import { ApiProperty } from '@nestjs/swagger';
 import { CreatePermissionDto } from './create-permission.dto';
 
 export class CreateBulkPermissionsDto {
-  @ApiProperty({ type: [CreatePermissionDto], description: 'Array de permisos a crear' })
+  @ApiProperty({
+    type: [CreatePermissionDto],
+    description: 'Array de permisos a crear',
+  })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CreatePermissionDto)

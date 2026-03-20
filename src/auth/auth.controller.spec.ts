@@ -45,7 +45,10 @@ describe('AuthController', () => {
       controllers: [AuthController],
       providers: [
         { provide: AuthService, useValue: authService },
-        { provide: JwtService, useValue: { verify: jest.fn(), sign: jest.fn() } },
+        {
+          provide: JwtService,
+          useValue: { verify: jest.fn(), sign: jest.fn() },
+        },
         { provide: Reflector, useValue: { get: jest.fn() } },
       ],
     }).compile();
@@ -115,7 +118,10 @@ describe('AuthController', () => {
 
       const result = await controller.logout(body, 'user-uuid-1');
 
-      expect(authService.logout).toHaveBeenCalledWith('rt-value', 'user-uuid-1');
+      expect(authService.logout).toHaveBeenCalledWith(
+        'rt-value',
+        'user-uuid-1',
+      );
       expect(result).toEqual(expected);
     });
   });
@@ -141,7 +147,13 @@ describe('AuthController', () => {
   describe('getSessions', () => {
     it('should call authService.getSessions with userId', async () => {
       const sessions = [
-        { id: 's1', ip_address: '127.0.0.1', user_agent: 'Chrome', created_at: new Date(), expires_at: new Date() },
+        {
+          id: 's1',
+          ip_address: '127.0.0.1',
+          user_agent: 'Chrome',
+          created_at: new Date(),
+          expires_at: new Date(),
+        },
       ];
       authService.getSessions!.mockResolvedValue(sessions as any);
 
@@ -221,7 +233,11 @@ describe('AuthController', () => {
   // ═══════════════════════════════════════════════════════════════
   describe('setup2fa', () => {
     it('should call authService.setup2fa with userId', async () => {
-      const expected = { secret: 'S', qr_code: 'data:image/png;base64,...', message: 'Escanea el QR' };
+      const expected = {
+        secret: 'S',
+        qr_code: 'data:image/png;base64,...',
+        message: 'Escanea el QR',
+      };
       authService.setup2fa!.mockResolvedValue(expected);
 
       const result = await controller.setup2fa('user-uuid-1');
@@ -239,9 +255,14 @@ describe('AuthController', () => {
       const expected = { message: '2FA activado exitosamente' };
       authService.verify2fa!.mockResolvedValue(expected);
 
-      const result = await controller.verify2fa('user-uuid-1', { code: '123456' });
+      const result = await controller.verify2fa('user-uuid-1', {
+        code: '123456',
+      });
 
-      expect(authService.verify2fa).toHaveBeenCalledWith('user-uuid-1', '123456');
+      expect(authService.verify2fa).toHaveBeenCalledWith(
+        'user-uuid-1',
+        '123456',
+      );
       expect(result).toEqual(expected);
     });
   });
@@ -254,9 +275,14 @@ describe('AuthController', () => {
       const expected = { message: '2FA desactivado exitosamente' };
       authService.disable2fa!.mockResolvedValue(expected);
 
-      const result = await controller.disable2fa('user-uuid-1', { code: '654321' });
+      const result = await controller.disable2fa('user-uuid-1', {
+        code: '654321',
+      });
 
-      expect(authService.disable2fa).toHaveBeenCalledWith('user-uuid-1', '654321');
+      expect(authService.disable2fa).toHaveBeenCalledWith(
+        'user-uuid-1',
+        '654321',
+      );
       expect(result).toEqual(expected);
     });
   });
@@ -269,7 +295,10 @@ describe('AuthController', () => {
       const expected = { access_token: 'at', refresh_token: 'rt' };
       authService.verifyLogin2fa!.mockResolvedValue(expected);
 
-      const result = await controller.login2fa({ temp_token: 'tmp', code: '123456' });
+      const result = await controller.login2fa({
+        temp_token: 'tmp',
+        code: '123456',
+      });
 
       expect(authService.verifyLogin2fa).toHaveBeenCalledWith('tmp', '123456');
       expect(result).toEqual(expected);
@@ -281,10 +310,14 @@ describe('AuthController', () => {
   // ═══════════════════════════════════════════════════════════════
   describe('forgotPassword', () => {
     it('should call authService.forgotPassword with email', async () => {
-      const expected = { message: 'Si el correo existe, recibiras un codigo de verificacion' };
+      const expected = {
+        message: 'Si el correo existe, recibiras un codigo de verificacion',
+      };
       authService.forgotPassword!.mockResolvedValue(expected);
 
-      const result = await controller.forgotPassword({ email: 'test@test.com' });
+      const result = await controller.forgotPassword({
+        email: 'test@test.com',
+      });
 
       expect(authService.forgotPassword).toHaveBeenCalledWith('test@test.com');
       expect(result).toEqual(expected);
@@ -296,12 +329,21 @@ describe('AuthController', () => {
   // ═══════════════════════════════════════════════════════════════
   describe('verifyResetCode', () => {
     it('should call authService.verifyResetCode with email and code', async () => {
-      const expected = { message: 'Codigo verificado correctamente', verified: true };
+      const expected = {
+        message: 'Codigo verificado correctamente',
+        verified: true,
+      };
       authService.verifyResetCode!.mockResolvedValue(expected);
 
-      const result = await controller.verifyResetCode({ email: 'test@test.com', code: '123456' });
+      const result = await controller.verifyResetCode({
+        email: 'test@test.com',
+        code: '123456',
+      });
 
-      expect(authService.verifyResetCode).toHaveBeenCalledWith('test@test.com', '123456');
+      expect(authService.verifyResetCode).toHaveBeenCalledWith(
+        'test@test.com',
+        '123456',
+      );
       expect(result).toEqual(expected);
     });
   });

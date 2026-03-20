@@ -58,7 +58,11 @@ describe('EmailService', () => {
       const mockInfo = { messageId: 'msg-1', response: '250 OK' };
       mockSendMail.mockResolvedValue(mockInfo);
 
-      const result = await service.sendResetCode('user@test.com', '123456', 'John');
+      const result = await service.sendResetCode(
+        'user@test.com',
+        '123456',
+        'John',
+      );
 
       expect(result).toEqual(mockInfo);
       expect(mockSendMail).toHaveBeenCalledWith(
@@ -71,7 +75,10 @@ describe('EmailService', () => {
     });
 
     it('should send reset code email without name', async () => {
-      mockSendMail.mockResolvedValue({ messageId: 'msg-2', response: '250 OK' });
+      mockSendMail.mockResolvedValue({
+        messageId: 'msg-2',
+        response: '250 OK',
+      });
 
       await service.sendResetCode('user@test.com', '654321');
 
@@ -97,7 +104,10 @@ describe('EmailService', () => {
       const mockInfo = { messageId: 'msg-3' };
       mockSendMail.mockResolvedValue(mockInfo);
 
-      const result = await service.sendAdminPasswordReset('user@test.com', 'Jane');
+      const result = await service.sendAdminPasswordReset(
+        'user@test.com',
+        'Jane',
+      );
 
       expect(result).toEqual(mockInfo);
       expect(mockSendMail).toHaveBeenCalledWith(

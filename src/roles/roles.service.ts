@@ -1,4 +1,10 @@
-import { Injectable, NotFoundException, ConflictException, ForbiddenException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  ForbiddenException,
+  Logger,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -10,7 +16,10 @@ export class RolesService {
   /**
    * Detecta ciclos en la jerarquia de roles.
    */
-  private async detectCycle(role_id: string, parent_role_id: string): Promise<boolean> {
+  private async detectCycle(
+    role_id: string,
+    parent_role_id: string,
+  ): Promise<boolean> {
     const visited = new Set<string>();
     let current: string | null = parent_role_id;
 
@@ -176,12 +185,15 @@ export class RolesService {
   }
 
   // ─── ACTUALIZAR ROL ────────────────────────────────────
-  async update(id: string, data: {
-    name?: string;
-    description?: string;
-    is_active?: boolean;
-    parent_role_id?: string;
-  }) {
+  async update(
+    id: string,
+    data: {
+      name?: string;
+      description?: string;
+      is_active?: boolean;
+      parent_role_id?: string;
+    },
+  ) {
     const role = await this.prisma.roles.findUnique({
       where: { id },
     });
@@ -266,7 +278,13 @@ export class RolesService {
         role_permissions: {
           include: {
             permission: {
-              select: { id: true, module: true, submodule: true, action: true, description: true },
+              select: {
+                id: true,
+                module: true,
+                submodule: true,
+                action: true,
+                description: true,
+              },
             },
           },
         },

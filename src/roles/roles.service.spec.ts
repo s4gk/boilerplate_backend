@@ -1,5 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException, ConflictException, ForbiddenException } from '@nestjs/common';
+import {
+  NotFoundException,
+  ConflictException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { RolesService } from './roles.service';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -42,7 +46,7 @@ describe('RolesService', () => {
     }).compile();
 
     service = module.get<RolesService>(RolesService);
-    prisma = module.get(PrismaService) as any;
+    prisma = module.get(PrismaService);
   });
 
   afterEach(() => jest.clearAllMocks());
@@ -139,7 +143,14 @@ describe('RolesService', () => {
         parent_role: null,
         child_roles: [],
         role_permissions: [
-          { permission: { id: 'perm-1', module: 'users', submodule: 'management', action: 'read' } },
+          {
+            permission: {
+              id: 'perm-1',
+              module: 'users',
+              submodule: 'management',
+              action: 'read',
+            },
+          },
         ],
       };
       prisma.roles.findUnique.mockResolvedValue(rawRole);
@@ -163,7 +174,9 @@ describe('RolesService', () => {
     it('should throw NotFoundException when role does not exist', async () => {
       prisma.roles.findUnique.mockResolvedValue(null);
 
-      await expect(service.findOne('nonexistent')).rejects.toThrow(NotFoundException);
+      await expect(service.findOne('nonexistent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -192,9 +205,14 @@ describe('RolesService', () => {
     });
 
     it('should throw ConflictException when role name already exists', async () => {
-      prisma.roles.findFirst.mockResolvedValue({ id: 'existing', name: createData.name });
+      prisma.roles.findFirst.mockResolvedValue({
+        id: 'existing',
+        name: createData.name,
+      });
 
-      await expect(service.create(createData)).rejects.toThrow(ConflictException);
+      await expect(service.create(createData)).rejects.toThrow(
+        ConflictException,
+      );
     });
 
     it('should throw NotFoundException when parent role is not found', async () => {
@@ -208,8 +226,16 @@ describe('RolesService', () => {
 
     it('should create role with permission_ids', async () => {
       prisma.roles.findFirst.mockResolvedValue(null);
-      prisma.roles.create.mockResolvedValue({ id: 'role-new', name: 'New', is_active: true, created_at: new Date() });
-      prisma.permissions.findMany.mockResolvedValue([{ id: 'p1' }, { id: 'p2' }]);
+      prisma.roles.create.mockResolvedValue({
+        id: 'role-new',
+        name: 'New',
+        is_active: true,
+        created_at: new Date(),
+      });
+      prisma.permissions.findMany.mockResolvedValue([
+        { id: 'p1' },
+        { id: 'p2' },
+      ]);
       prisma.role_permissions.createMany.mockResolvedValue({ count: 2 });
 
       await service.create({ name: 'New', permission_ids: ['p1', 'p2'] });
@@ -224,7 +250,12 @@ describe('RolesService', () => {
 
     it('should throw NotFoundException when some permission_ids not found', async () => {
       prisma.roles.findFirst.mockResolvedValue(null);
-      prisma.roles.create.mockResolvedValue({ id: 'role-new', name: 'New', is_active: true, created_at: new Date() });
+      prisma.roles.create.mockResolvedValue({
+        id: 'role-new',
+        name: 'New',
+        is_active: true,
+        created_at: new Date(),
+      });
       prisma.permissions.findMany.mockResolvedValue([{ id: 'p1' }]); // only 1 of 2
 
       await expect(
@@ -239,9 +270,19 @@ describe('RolesService', () => {
     const roleId = 'role-1';
 
     it('should update a role successfully', async () => {
-      prisma.roles.findUnique.mockResolvedValue({ id: roleId, name: 'Old Name', is_system: false });
+      prisma.roles.findUnique.mockResolvedValue({
+        id: roleId,
+        name: 'Old Name',
+        is_system: false,
+      });
       prisma.roles.findFirst.mockResolvedValue(null); // no conflict
-      const updatedRole = { id: roleId, name: 'Updated Role', description: null, is_active: true, updated_at: new Date() };
+      const updatedRole = {
+        id: roleId,
+        name: 'Updated Role',
+        description: null,
+        is_active: true,
+        updated_at: new Date(),
+      };
       prisma.roles.update.mockResolvedValue(updatedRole);
 
       const result = await service.update(roleId, { name: 'Updated Role' });
@@ -252,24 +293,45 @@ describe('RolesService', () => {
     it('should throw NotFoundException when role does not exist', async () => {
       prisma.roles.findUnique.mockResolvedValue(null);
 
-      await expect(service.update('nonexistent', { name: 'Test' })).rejects.toThrow(NotFoundException);
+      await expect(
+        service.update('nonexistent', { name: 'Test' }),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should throw ForbiddenException when updating a system role', async () => {
-      prisma.roles.findUnique.mockResolvedValue({ id: roleId, name: 'System Admin', is_system: true });
+      prisma.roles.findUnique.mockResolvedValue({
+        id: roleId,
+        name: 'System Admin',
+        is_system: true,
+      });
 
-      await expect(service.update(roleId, { name: 'Test' })).rejects.toThrow(ForbiddenException);
+      await expect(service.update(roleId, { name: 'Test' })).rejects.toThrow(
+        ForbiddenException,
+      );
     });
 
     it('should throw ConflictException when new name already taken by another role', async () => {
-      prisma.roles.findUnique.mockResolvedValue({ id: roleId, name: 'Old Name', is_system: false });
-      prisma.roles.findFirst.mockResolvedValue({ id: 'other-role', name: 'Taken Name' });
+      prisma.roles.findUnique.mockResolvedValue({
+        id: roleId,
+        name: 'Old Name',
+        is_system: false,
+      });
+      prisma.roles.findFirst.mockResolvedValue({
+        id: 'other-role',
+        name: 'Taken Name',
+      });
 
-      await expect(service.update(roleId, { name: 'Taken Name' })).rejects.toThrow(ConflictException);
+      await expect(
+        service.update(roleId, { name: 'Taken Name' }),
+      ).rejects.toThrow(ConflictException);
     });
 
     it('should throw ConflictException when setting self as parent', async () => {
-      prisma.roles.findUnique.mockResolvedValue({ id: roleId, name: 'Role', is_system: false });
+      prisma.roles.findUnique.mockResolvedValue({
+        id: roleId,
+        name: 'Role',
+        is_system: false,
+      });
 
       await expect(
         service.update(roleId, { parent_role_id: roleId }),
@@ -289,7 +351,11 @@ describe('RolesService', () => {
     it('should detect cycle in hierarchy and throw ConflictException', async () => {
       // role-1 -> set parent to role-2, but role-2 already has parent role-1 => cycle
       prisma.roles.findUnique
-        .mockResolvedValueOnce({ id: 'role-1', name: 'Role1', is_system: false }) // role lookup
+        .mockResolvedValueOnce({
+          id: 'role-1',
+          name: 'Role1',
+          is_system: false,
+        }) // role lookup
         .mockResolvedValueOnce({ id: 'role-2', name: 'Role2' }); // parent lookup
 
       // detectCycle traversal: role-2's parent is role-1 => cycle found
@@ -305,25 +371,39 @@ describe('RolesService', () => {
 
   describe('remove', () => {
     it('should delete a role successfully', async () => {
-      prisma.roles.findUnique.mockResolvedValue({ id: 'role-1', name: 'Custom Role', is_system: false });
+      prisma.roles.findUnique.mockResolvedValue({
+        id: 'role-1',
+        name: 'Custom Role',
+        is_system: false,
+      });
       prisma.roles.delete.mockResolvedValue({});
 
       const result = await service.remove('role-1');
 
       expect(result).toEqual({ message: 'Rol eliminado exitosamente' });
-      expect(prisma.roles.delete).toHaveBeenCalledWith({ where: { id: 'role-1' } });
+      expect(prisma.roles.delete).toHaveBeenCalledWith({
+        where: { id: 'role-1' },
+      });
     });
 
     it('should throw NotFoundException when role does not exist', async () => {
       prisma.roles.findUnique.mockResolvedValue(null);
 
-      await expect(service.remove('nonexistent')).rejects.toThrow(NotFoundException);
+      await expect(service.remove('nonexistent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw ForbiddenException when deleting a system role', async () => {
-      prisma.roles.findUnique.mockResolvedValue({ id: 'role-1', name: 'System Admin', is_system: true });
+      prisma.roles.findUnique.mockResolvedValue({
+        id: 'role-1',
+        name: 'System Admin',
+        is_system: true,
+      });
 
-      await expect(service.remove('role-1')).rejects.toThrow(ForbiddenException);
+      await expect(service.remove('role-1')).rejects.toThrow(
+        ForbiddenException,
+      );
       expect(prisma.roles.delete).not.toHaveBeenCalled();
     });
   });
@@ -334,8 +414,24 @@ describe('RolesService', () => {
     it('should return permissions with full string', async () => {
       prisma.roles.findUnique.mockResolvedValue({
         role_permissions: [
-          { permission: { id: 'perm-1', module: 'users', submodule: 'management', action: 'create', description: 'Create users' } },
-          { permission: { id: 'perm-2', module: 'roles', submodule: 'settings', action: 'read', description: 'Read roles' } },
+          {
+            permission: {
+              id: 'perm-1',
+              module: 'users',
+              submodule: 'management',
+              action: 'create',
+              description: 'Create users',
+            },
+          },
+          {
+            permission: {
+              id: 'perm-2',
+              module: 'roles',
+              submodule: 'settings',
+              action: 'read',
+              description: 'Read roles',
+            },
+          },
         ],
       });
 
@@ -356,7 +452,9 @@ describe('RolesService', () => {
     it('should throw NotFoundException when role does not exist', async () => {
       prisma.roles.findUnique.mockResolvedValue(null);
 
-      await expect(service.getRolePermissions('nonexistent')).rejects.toThrow(NotFoundException);
+      await expect(service.getRolePermissions('nonexistent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -368,10 +466,15 @@ describe('RolesService', () => {
 
     it('should assign permissions successfully', async () => {
       prisma.roles.findUnique.mockResolvedValue({ id: roleId });
-      prisma.permissions.findMany.mockResolvedValue([{ id: 'perm-1' }, { id: 'perm-2' }]);
+      prisma.permissions.findMany.mockResolvedValue([
+        { id: 'perm-1' },
+        { id: 'perm-2' },
+      ]);
       prisma.role_permissions.createMany.mockResolvedValue({ count: 2 });
 
-      const result = await service.assignPermissions(roleId, { permission_ids: permissionIds });
+      const result = await service.assignPermissions(roleId, {
+        permission_ids: permissionIds,
+      });
 
       expect(result).toEqual({ message: 'Permisos asignados exitosamente' });
       expect(prisma.role_permissions.createMany).toHaveBeenCalledWith({
@@ -387,7 +490,9 @@ describe('RolesService', () => {
       prisma.roles.findUnique.mockResolvedValue(null);
 
       await expect(
-        service.assignPermissions('nonexistent', { permission_ids: permissionIds }),
+        service.assignPermissions('nonexistent', {
+          permission_ids: permissionIds,
+        }),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -413,14 +518,18 @@ describe('RolesService', () => {
 
       expect(result).toEqual({ message: 'Permiso removido exitosamente' });
       expect(prisma.role_permissions.delete).toHaveBeenCalledWith({
-        where: { role_id_permission_id: { role_id: 'role-1', permission_id: 'perm-1' } },
+        where: {
+          role_id_permission_id: { role_id: 'role-1', permission_id: 'perm-1' },
+        },
       });
     });
 
     it('should throw NotFoundException when role does not exist', async () => {
       prisma.roles.findUnique.mockResolvedValue(null);
 
-      await expect(service.removePermission('nonexistent', 'perm-1')).rejects.toThrow(NotFoundException);
+      await expect(
+        service.removePermission('nonexistent', 'perm-1'),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -466,7 +575,9 @@ describe('RolesService', () => {
     it('should throw NotFoundException when role does not exist', async () => {
       prisma.roles.findUnique.mockResolvedValue(null);
 
-      await expect(service.getRoleUsers('nonexistent')).rejects.toThrow(NotFoundException);
+      await expect(service.getRoleUsers('nonexistent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });

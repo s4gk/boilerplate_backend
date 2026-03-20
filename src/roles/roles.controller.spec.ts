@@ -38,7 +38,10 @@ describe('RolesController', () => {
       providers: [
         { provide: RolesService, useValue: rolesService },
         { provide: AuditService, useValue: auditService },
-        { provide: JwtService, useValue: { sign: jest.fn(), verify: jest.fn() } },
+        {
+          provide: JwtService,
+          useValue: { sign: jest.fn(), verify: jest.fn() },
+        },
         { provide: Reflector, useValue: { get: jest.fn() } },
         { provide: PrismaService, useValue: {} },
       ],
@@ -57,7 +60,9 @@ describe('RolesController', () => {
 
   describe('findAll', () => {
     it('should delegate to rolesService.findAll with parsed is_active', async () => {
-      const roles = [{ id: 'r1', name: 'Admin', total_users: 5, total_permissions: 10 }];
+      const roles = [
+        { id: 'r1', name: 'Admin', total_users: 5, total_permissions: 10 },
+      ];
       rolesService.findAll.mockResolvedValue(roles);
 
       const result = await controller.findAll({ is_active: 'true' });
@@ -71,7 +76,9 @@ describe('RolesController', () => {
 
       await controller.findAll({});
 
-      expect(rolesService.findAll).toHaveBeenCalledWith({ is_active: undefined });
+      expect(rolesService.findAll).toHaveBeenCalledWith({
+        is_active: undefined,
+      });
     });
   });
 
@@ -137,7 +144,9 @@ describe('RolesController', () => {
 
   describe('remove', () => {
     it('should delegate to rolesService.remove and log audit', async () => {
-      rolesService.remove.mockResolvedValue({ message: 'Rol eliminado exitosamente' });
+      rolesService.remove.mockResolvedValue({
+        message: 'Rol eliminado exitosamente',
+      });
 
       const result = await controller.remove('r1', 'admin-id', mockReq);
 
@@ -170,10 +179,17 @@ describe('RolesController', () => {
 
   describe('assignPermissions', () => {
     it('should delegate to rolesService.assignPermissions and log audit', async () => {
-      rolesService.assignPermissions.mockResolvedValue({ message: 'Permisos asignados exitosamente' });
+      rolesService.assignPermissions.mockResolvedValue({
+        message: 'Permisos asignados exitosamente',
+      });
 
       const body = { permission_ids: ['p1', 'p2'] } as any;
-      const result = await controller.assignPermissions('r1', 'admin-id', body, mockReq);
+      const result = await controller.assignPermissions(
+        'r1',
+        'admin-id',
+        body,
+        mockReq,
+      );
 
       expect(rolesService.assignPermissions).toHaveBeenCalledWith('r1', body);
       expect(auditService.log).toHaveBeenCalledWith(
@@ -190,9 +206,16 @@ describe('RolesController', () => {
 
   describe('removePermission', () => {
     it('should delegate to rolesService.removePermission and log audit', async () => {
-      rolesService.removePermission.mockResolvedValue({ message: 'Permiso removido exitosamente' });
+      rolesService.removePermission.mockResolvedValue({
+        message: 'Permiso removido exitosamente',
+      });
 
-      const result = await controller.removePermission('r1', 'p1', 'admin-id', mockReq);
+      const result = await controller.removePermission(
+        'r1',
+        'p1',
+        'admin-id',
+        mockReq,
+      );
 
       expect(rolesService.removePermission).toHaveBeenCalledWith('r1', 'p1');
       expect(auditService.log).toHaveBeenCalledWith(

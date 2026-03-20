@@ -1,12 +1,34 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards, ParseUUIDPipe, Req } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  ParseUUIDPipe,
+  Req,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { PermissionsService } from './permissions.service';
 import { AuditService } from '../common/services/audit.service';
 import { JwtGuard } from '../auth/guards/jwt.guard';
 import { PermissionGuard } from '../auth/guards/permission.guard';
 import { RequirePermission } from '../auth/decorators/require-permission.decorator';
 import { CurrentUser } from '../auth/decorators/user-current.decorator';
-import { CreatePermissionDto, CreateBulkPermissionsDto, UpdatePermissionDto } from './dto';
+import {
+  CreatePermissionDto,
+  CreateBulkPermissionsDto,
+  UpdatePermissionDto,
+} from './dto';
 import type { Request } from 'express';
 
 @ApiTags('Permissions')
@@ -20,7 +42,11 @@ export class PermissionsController {
   ) {}
 
   private auditCtx(userId: string, req: Request) {
-    return { user_id: userId, ip_address: req.ip, user_agent: req.headers['user-agent'] as string };
+    return {
+      user_id: userId,
+      ip_address: req.ip,
+      user_agent: req.headers['user-agent'] as string,
+    };
   }
 
   @RequirePermission('configuracion', 'roles', 'ver')
@@ -64,9 +90,15 @@ export class PermissionsController {
 
     this.auditService.log({
       context: this.auditCtx(userId, req),
-      module: 'configuracion', submodule: 'permisos', action: 'crear',
+      module: 'configuracion',
+      submodule: 'permisos',
+      action: 'crear',
       resource_id: result.id,
-      new_data: { module: body.module, submodule: body.submodule, action: body.action },
+      new_data: {
+        module: body.module,
+        submodule: body.submodule,
+        action: body.action,
+      },
     });
 
     return result;
@@ -85,8 +117,12 @@ export class PermissionsController {
 
     this.auditService.log({
       context: this.auditCtx(userId, req),
-      module: 'configuracion', submodule: 'permisos', action: 'crear_masivo',
-      new_data: { count: result.results.filter((r) => r.status === 'created').length },
+      module: 'configuracion',
+      submodule: 'permisos',
+      action: 'crear_masivo',
+      new_data: {
+        count: result.results.filter((r) => r.status === 'created').length,
+      },
     });
 
     return result;
@@ -106,7 +142,9 @@ export class PermissionsController {
 
     this.auditService.log({
       context: this.auditCtx(userId, req),
-      module: 'configuracion', submodule: 'permisos', action: 'editar',
+      module: 'configuracion',
+      submodule: 'permisos',
+      action: 'editar',
       resource_id: id,
       new_data: body,
     });
@@ -128,7 +166,9 @@ export class PermissionsController {
 
     this.auditService.log({
       context: this.auditCtx(userId, req),
-      module: 'configuracion', submodule: 'permisos', action: 'eliminar',
+      module: 'configuracion',
+      submodule: 'permisos',
+      action: 'eliminar',
       resource_id: id,
     });
 

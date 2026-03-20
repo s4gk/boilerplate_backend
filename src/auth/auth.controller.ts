@@ -1,10 +1,32 @@
-import { Controller, Post, Get, Body, Req, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Req,
+  HttpCode,
+  HttpStatus,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { JwtGuard } from './guards/jwt.guard';
 import { CurrentUser } from './decorators/user-current.decorator';
-import { LoginDto, RefreshTokenDto, ForgotPasswordDto, VerifyCodeDto, ResetPasswordDto, Verify2faDto, Login2faDto } from './dto';
+import {
+  LoginDto,
+  RefreshTokenDto,
+  ForgotPasswordDto,
+  VerifyCodeDto,
+  ResetPasswordDto,
+  Verify2faDto,
+  Login2faDto,
+} from './dto';
 import type { Request } from 'express';
 
 @ApiTags('Auth')
@@ -33,7 +55,10 @@ export class AuthController {
   @Throttle({ default: { ttl: 60000, limit: 20 } })
   @ApiOperation({ summary: 'Refrescar tokens' })
   @ApiResponse({ status: 200, description: 'Nuevos tokens generados' })
-  @ApiResponse({ status: 401, description: 'Refresh token invalido o expirado' })
+  @ApiResponse({
+    status: 401,
+    description: 'Refresh token invalido o expirado',
+  })
   refreshTokens(@Body() body: RefreshTokenDto) {
     return this.authService.refreshTokens(body.refresh_token);
   }
@@ -75,11 +100,10 @@ export class AuthController {
   @ApiOperation({ summary: 'Obtener perfil del usuario autenticado' })
   @ApiResponse({ status: 200, description: 'Perfil con roles y permisos' })
   getProfile(@CurrentUser('id') userId: string, @Req() req: Request) {
-    return this.authService.getProfile(userId)
-      .then((profile) => ({
-        ...profile,
-        avatar_url: this.toAbsoluteUrl(profile.avatar_url, req),
-      }));
+    return this.authService.getProfile(userId).then((profile) => ({
+      ...profile,
+      avatar_url: this.toAbsoluteUrl(profile.avatar_url, req),
+    }));
   }
 
   // ── 2FA ─────────────────────────────────────────────
@@ -124,7 +148,10 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { ttl: 60000, limit: 3 } })
   @ApiOperation({ summary: 'Solicitar codigo de recuperacion de contrasena' })
-  @ApiResponse({ status: 200, description: 'Codigo enviado si el email existe' })
+  @ApiResponse({
+    status: 200,
+    description: 'Codigo enviado si el email existe',
+  })
   forgotPassword(@Body() body: ForgotPasswordDto) {
     return this.authService.forgotPassword(body.email);
   }
@@ -146,10 +173,17 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Contrasena actualizada' })
   @ApiResponse({ status: 401, description: 'Codigo no verificado o expirado' })
   resetPassword(@Body() body: ResetPasswordDto) {
-    return this.authService.resetPassword(body.email, body.code, body.new_password);
+    return this.authService.resetPassword(
+      body.email,
+      body.code,
+      body.new_password,
+    );
   }
 
-  private toAbsoluteUrl(filePath?: string | null, req?: Request): string | null | undefined {
+  private toAbsoluteUrl(
+    filePath?: string | null,
+    req?: Request,
+  ): string | null | undefined {
     if (!filePath) return filePath;
     if (/^https?:\/\//i.test(filePath)) return filePath;
 
@@ -167,8 +201,10 @@ export class AuthController {
 
     const forwardedProto = req.headers['x-forwarded-proto'];
     const forwardedHost = req.headers['x-forwarded-host'];
-    const protocol = typeof forwardedProto === 'string' ? forwardedProto : req.protocol;
-    const host = typeof forwardedHost === 'string' ? forwardedHost : req.get('host');
+    const protocol =
+      typeof forwardedProto === 'string' ? forwardedProto : req.protocol;
+    const host =
+      typeof forwardedHost === 'string' ? forwardedHost : req.get('host');
 
     if (!host) return undefined;
     return `${protocol}://${host}`.replace(/\/+$/, '');

@@ -1,19 +1,47 @@
 import {
-  Controller, Get, Post, Put, Patch, Delete,
-  Body, Param, Query, UseGuards, UseInterceptors, Req, ForbiddenException,
-  UploadedFiles, ParseUUIDPipe,
+  Controller,
+  Get,
+  Post,
+  Put,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  UseInterceptors,
+  Req,
+  ForbiddenException,
+  UploadedFiles,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiConsumes, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { UploadsService } from '../uploads/uploads.service';
 import { AuditService } from '../common/services/audit.service';
-import { imageFileFilter, documentFileFilter } from '../common/filters/file-filter';
+import {
+  imageFileFilter,
+  documentFileFilter,
+} from '../common/filters/file-filter';
 import { JwtGuard } from '../auth/guards/jwt.guard';
 import { PermissionGuard } from '../auth/guards/permission.guard';
 import { RequirePermission } from '../auth/decorators/require-permission.decorator';
 import { CurrentUser } from '../auth/decorators/user-current.decorator';
-import { CreateUserDto, UpdateUserDto, ChangePasswordDto, AssignRolesDto, AssignPermissionsDto } from './dto';
+import {
+  CreateUserDto,
+  UpdateUserDto,
+  ChangePasswordDto,
+  AssignRolesDto,
+  AssignPermissionsDto,
+} from './dto';
 import type { Request } from 'express';
 
 @ApiTags('Users')
@@ -28,7 +56,11 @@ export class UsersController {
   ) {}
 
   private auditCtx(userId: string, req: Request) {
-    return { user_id: userId, ip_address: req.ip, user_agent: req.headers['user-agent'] as string };
+    return {
+      user_id: userId,
+      ip_address: req.ip,
+      user_agent: req.headers['user-agent'] as string,
+    };
   }
 
   // ─── CRUD ───────────────────────────────────────────────
@@ -42,18 +74,26 @@ export class UsersController {
   @ApiQuery({ name: 'is_active', required: false, type: Boolean })
   @ApiResponse({ status: 200, description: 'Lista paginada de usuarios' })
   findAll(
-    @Query() query: { page?: string; limit?: string; search?: string; is_active?: string },
+    @Query()
+    query: {
+      page?: string;
+      limit?: string;
+      search?: string;
+      is_active?: string;
+    },
     @Req() req: Request,
   ) {
-    return this.usersService.findAll({
-      page: query.page ? parseInt(query.page) : undefined,
-      limit: query.limit ? parseInt(query.limit) : undefined,
-      search: query.search,
-      is_active: query.is_active ? query.is_active === 'true' : undefined,
-    }).then((result) => ({
-      ...result,
-      data: result.data.map((user) => this.mapUserFileUrls(user, req)),
-    }));
+    return this.usersService
+      .findAll({
+        page: query.page ? parseInt(query.page) : undefined,
+        limit: query.limit ? parseInt(query.limit) : undefined,
+        search: query.search,
+        is_active: query.is_active ? query.is_active === 'true' : undefined,
+      })
+      .then((result) => ({
+        ...result,
+        data: result.data.map((user) => this.mapUserFileUrls(user, req)),
+      }));
   }
 
   @RequirePermission('configuracion', 'usuarios', 'ver')
@@ -75,13 +115,14 @@ export class UsersController {
   @RequirePermission('configuracion', 'usuarios', 'ver')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener detalle de un usuario' })
-  @ApiResponse({ status: 200, description: 'Detalle del usuario con roles y permisos' })
+  @ApiResponse({
+    status: 200,
+    description: 'Detalle del usuario con roles y permisos',
+  })
   @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
-  findOne(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Req() req: Request,
-  ) {
-    return this.usersService.findOne(id)
+  findOne(@Param('id', ParseUUIDPipe) id: string, @Req() req: Request) {
+    return this.usersService
+      .findOne(id)
       .then((user) => this.mapUserFileUrls(user, req));
   }
 
@@ -91,24 +132,30 @@ export class UsersController {
   @ApiConsumes('application/json', 'multipart/form-data')
   @ApiResponse({ status: 201, description: 'Usuario creado' })
   @ApiResponse({ status: 409, description: 'Email o username ya existe' })
-  @UseInterceptors(FileFieldsInterceptor([
-    { name: 'avatar', maxCount: 1 },
-    { name: 'signature', maxCount: 1 },
-    { name: 'documents', maxCount: 10 },
-  ], {
-    limits: { fileSize: 5 * 1024 * 1024 },
-    fileFilter: (req, file, cb) => {
-      if (file.fieldname === 'avatar' || file.fieldname === 'signature') {
-        return imageFileFilter(req, file, cb);
-      }
-      return documentFileFilter(req, file, cb);
-    },
-  }))
+  @UseInterceptors(
+    FileFieldsInterceptor(
+      [
+        { name: 'avatar', maxCount: 1 },
+        { name: 'signature', maxCount: 1 },
+        { name: 'documents', maxCount: 10 },
+      ],
+      {
+        limits: { fileSize: 5 * 1024 * 1024 },
+        fileFilter: (req, file, cb) => {
+          if (file.fieldname === 'avatar' || file.fieldname === 'signature') {
+            return imageFileFilter(req, file, cb);
+          }
+          return documentFileFilter(req, file, cb);
+        },
+      },
+    ),
+  )
   async create(
     @CurrentUser('id') userId: string,
     @Body() body: CreateUserDto,
     @Req() req: Request,
-    @UploadedFiles() files: {
+    @UploadedFiles()
+    files: {
       avatar?: Express.Multer.File[];
       signature?: Express.Multer.File[];
       documents?: Express.Multer.File[];
@@ -122,22 +169,33 @@ export class UsersController {
       avatar_url = this.uploadsService.saveFile(files.avatar[0], 'avatars');
     }
     if (files?.signature?.[0]) {
-      signature_url = this.uploadsService.saveFile(files.signature[0], 'signatures');
+      signature_url = this.uploadsService.saveFile(
+        files.signature[0],
+        'signatures',
+      );
     }
     if (files?.documents?.length) {
-      document_urls = this.uploadsService.saveFiles(files.documents, 'documents');
+      document_urls = this.uploadsService.saveFiles(
+        files.documents,
+        'documents',
+      );
     }
 
-    const createdUser = await this.usersService.create({
-      ...body,
-      avatar_url,
-      signature_url,
-      document_urls,
-    }, userId);
+    const createdUser = await this.usersService.create(
+      {
+        ...body,
+        avatar_url,
+        signature_url,
+        document_urls,
+      },
+      userId,
+    );
 
     this.auditService.log({
       context: this.auditCtx(userId, req),
-      module: 'configuracion', submodule: 'usuarios', action: 'crear',
+      module: 'configuracion',
+      submodule: 'usuarios',
+      action: 'crear',
       resource_id: createdUser.id,
       new_data: { email: createdUser.email, username: createdUser.username },
     });
@@ -151,25 +209,31 @@ export class UsersController {
   @ApiConsumes('application/json', 'multipart/form-data')
   @ApiResponse({ status: 200, description: 'Usuario actualizado' })
   @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
-  @UseInterceptors(FileFieldsInterceptor([
-    { name: 'avatar', maxCount: 1 },
-    { name: 'signature', maxCount: 1 },
-    { name: 'documents', maxCount: 10 },
-  ], {
-    limits: { fileSize: 5 * 1024 * 1024 },
-    fileFilter: (req, file, cb) => {
-      if (file.fieldname === 'avatar' || file.fieldname === 'signature') {
-        return imageFileFilter(req, file, cb);
-      }
-      return documentFileFilter(req, file, cb);
-    },
-  }))
+  @UseInterceptors(
+    FileFieldsInterceptor(
+      [
+        { name: 'avatar', maxCount: 1 },
+        { name: 'signature', maxCount: 1 },
+        { name: 'documents', maxCount: 10 },
+      ],
+      {
+        limits: { fileSize: 5 * 1024 * 1024 },
+        fileFilter: (req, file, cb) => {
+          if (file.fieldname === 'avatar' || file.fieldname === 'signature') {
+            return imageFileFilter(req, file, cb);
+          }
+          return documentFileFilter(req, file, cb);
+        },
+      },
+    ),
+  )
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser('id') userId: string,
     @Body() body: UpdateUserDto,
     @Req() req: Request,
-    @UploadedFiles() files: {
+    @UploadedFiles()
+    files: {
       avatar?: Express.Multer.File[];
       signature?: Express.Multer.File[];
       documents?: Express.Multer.File[];
@@ -183,15 +247,22 @@ export class UsersController {
       avatar_url = this.uploadsService.saveFile(files.avatar[0], 'avatars');
     }
     if (files?.signature?.[0]) {
-      signature_url = this.uploadsService.saveFile(files.signature[0], 'signatures');
+      signature_url = this.uploadsService.saveFile(
+        files.signature[0],
+        'signatures',
+      );
     }
     if (files?.documents?.length) {
-      document_urls = this.uploadsService.saveFiles(files.documents, 'documents');
+      document_urls = this.uploadsService.saveFiles(
+        files.documents,
+        'documents',
+      );
     }
 
     const parsedBody: any = {
       ...body,
-      is_active: body.is_active !== undefined ? body.is_active === 'true' : undefined,
+      is_active:
+        body.is_active !== undefined ? body.is_active === 'true' : undefined,
     };
 
     if (avatar_url) parsedBody.avatar_url = avatar_url;
@@ -202,7 +273,9 @@ export class UsersController {
 
     this.auditService.log({
       context: this.auditCtx(userId, req),
-      module: 'configuracion', submodule: 'usuarios', action: 'editar',
+      module: 'configuracion',
+      submodule: 'usuarios',
+      action: 'editar',
       resource_id: id,
       new_data: parsedBody,
     });
@@ -224,7 +297,9 @@ export class UsersController {
 
     this.auditService.log({
       context: this.auditCtx(userId, req),
-      module: 'configuracion', submodule: 'usuarios', action: 'eliminar',
+      module: 'configuracion',
+      submodule: 'usuarios',
+      action: 'eliminar',
       resource_id: id,
     });
 
@@ -247,7 +322,9 @@ export class UsersController {
 
     this.auditService.log({
       context: this.auditCtx(userId, req),
-      module: 'configuracion', submodule: 'usuarios', action: 'cambiar_password',
+      module: 'configuracion',
+      submodule: 'usuarios',
+      action: 'cambiar_password',
       resource_id: id,
     });
 
@@ -255,8 +332,14 @@ export class UsersController {
   }
 
   @Patch(':id/password/admin-reset')
-  @ApiOperation({ summary: 'Resetear contrasena de un usuario directamente (solo super admin)' })
-  @ApiResponse({ status: 200, description: 'Contrasena actualizada por super admin' })
+  @ApiOperation({
+    summary:
+      'Resetear contrasena de un usuario directamente (solo super admin)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Contrasena actualizada por super admin',
+  })
   @ApiResponse({ status: 403, description: 'Solo disponible para super admin' })
   async adminResetPassword(
     @Param('id', ParseUUIDPipe) id: string,
@@ -266,14 +349,18 @@ export class UsersController {
     @Req() req: Request,
   ) {
     if (!isSuperAdmin) {
-      throw new ForbiddenException('Solo el super admin puede resetear contrasenas directamente');
+      throw new ForbiddenException(
+        'Solo el super admin puede resetear contrasenas directamente',
+      );
     }
 
     const result = await this.usersService.adminResetPassword(id, body, userId);
 
     this.auditService.log({
       context: this.auditCtx(userId, req),
-      module: 'configuracion', submodule: 'usuarios', action: 'admin_reset_password',
+      module: 'configuracion',
+      submodule: 'usuarios',
+      action: 'admin_reset_password',
       resource_id: id,
       new_data: { reset_by: userId, target_user: id },
     });
@@ -294,7 +381,9 @@ export class UsersController {
 
     this.auditService.log({
       context: this.auditCtx(userId, req),
-      module: 'configuracion', submodule: 'usuarios', action: 'toggle_status',
+      module: 'configuracion',
+      submodule: 'usuarios',
+      action: 'toggle_status',
       resource_id: id,
       new_data: { is_active: result.is_active },
     });
@@ -326,7 +415,9 @@ export class UsersController {
 
     this.auditService.log({
       context: this.auditCtx(userId, req),
-      module: 'configuracion', submodule: 'usuarios', action: 'asignar_roles',
+      module: 'configuracion',
+      submodule: 'usuarios',
+      action: 'asignar_roles',
       resource_id: id,
       new_data: { role_ids: body.role_ids },
     });
@@ -348,7 +439,9 @@ export class UsersController {
 
     this.auditService.log({
       context: this.auditCtx(userId, req),
-      module: 'configuracion', submodule: 'usuarios', action: 'remover_rol',
+      module: 'configuracion',
+      submodule: 'usuarios',
+      action: 'remover_rol',
       resource_id: id,
       old_data: { role_id: roleId },
     });
@@ -360,7 +453,9 @@ export class UsersController {
 
   @RequirePermission('configuracion', 'usuarios', 'ver')
   @Get(':id/permissions')
-  @ApiOperation({ summary: 'Obtener permisos combinados del usuario (roles + extra)' })
+  @ApiOperation({
+    summary: 'Obtener permisos combinados del usuario (roles + extra)',
+  })
   @ApiResponse({ status: 200, description: 'Lista de permisos' })
   getUserPermissions(@Param('id', ParseUUIDPipe) id: string) {
     return this.usersService.getUserPermissions(id);
@@ -376,11 +471,17 @@ export class UsersController {
     @Body() body: AssignPermissionsDto,
     @Req() req: Request,
   ) {
-    const result = await this.usersService.assignExtraPermissions(id, body, userId);
+    const result = await this.usersService.assignExtraPermissions(
+      id,
+      body,
+      userId,
+    );
 
     this.auditService.log({
       context: this.auditCtx(userId, req),
-      module: 'configuracion', submodule: 'usuarios', action: 'asignar_permisos',
+      module: 'configuracion',
+      submodule: 'usuarios',
+      action: 'asignar_permisos',
       resource_id: id,
       new_data: { permission_ids: body.permission_ids },
     });
@@ -398,11 +499,17 @@ export class UsersController {
     @Body() body: AssignPermissionsDto,
     @Req() req: Request,
   ) {
-    const result = await this.usersService.replaceExtraPermissions(id, body, userId);
+    const result = await this.usersService.replaceExtraPermissions(
+      id,
+      body,
+      userId,
+    );
 
     this.auditService.log({
       context: this.auditCtx(userId, req),
-      module: 'configuracion', submodule: 'usuarios', action: 'reemplazar_permisos',
+      module: 'configuracion',
+      submodule: 'usuarios',
+      action: 'reemplazar_permisos',
       resource_id: id,
       new_data: { permission_ids: body.permission_ids },
     });
@@ -420,11 +527,16 @@ export class UsersController {
     @CurrentUser('id') userId: string,
     @Req() req: Request,
   ) {
-    const result = await this.usersService.removeExtraPermission(id, permissionId);
+    const result = await this.usersService.removeExtraPermission(
+      id,
+      permissionId,
+    );
 
     this.auditService.log({
       context: this.auditCtx(userId, req),
-      module: 'configuracion', submodule: 'usuarios', action: 'remover_permiso',
+      module: 'configuracion',
+      submodule: 'usuarios',
+      action: 'remover_permiso',
       resource_id: id,
       old_data: { permission_id: permissionId },
     });
@@ -432,7 +544,10 @@ export class UsersController {
     return result;
   }
 
-  private mapUserFileUrls<T extends Record<string, any>>(user: T, req: Request): T {
+  private mapUserFileUrls<T extends Record<string, any>>(
+    user: T,
+    req: Request,
+  ): T {
     return {
       ...user,
       avatar_url: this.toAbsoluteUrl(user.avatar_url, req),
@@ -443,7 +558,10 @@ export class UsersController {
     };
   }
 
-  private toAbsoluteUrl(filePath?: string | null, req?: Request): string | null | undefined {
+  private toAbsoluteUrl(
+    filePath?: string | null,
+    req?: Request,
+  ): string | null | undefined {
     if (!filePath) return filePath;
     if (/^https?:\/\//i.test(filePath)) return filePath;
 
@@ -461,8 +579,10 @@ export class UsersController {
 
     const forwardedProto = req.headers['x-forwarded-proto'];
     const forwardedHost = req.headers['x-forwarded-host'];
-    const protocol = typeof forwardedProto === 'string' ? forwardedProto : req.protocol;
-    const host = typeof forwardedHost === 'string' ? forwardedHost : req.get('host');
+    const protocol =
+      typeof forwardedProto === 'string' ? forwardedProto : req.protocol;
+    const host =
+      typeof forwardedHost === 'string' ? forwardedHost : req.get('host');
 
     if (!host) return undefined;
     return `${protocol}://${host}`.replace(/\/+$/, '');

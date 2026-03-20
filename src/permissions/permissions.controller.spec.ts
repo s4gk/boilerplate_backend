@@ -36,7 +36,10 @@ describe('PermissionsController', () => {
       providers: [
         { provide: PermissionsService, useValue: permissionsService },
         { provide: AuditService, useValue: auditService },
-        { provide: JwtService, useValue: { sign: jest.fn(), verify: jest.fn() } },
+        {
+          provide: JwtService,
+          useValue: { sign: jest.fn(), verify: jest.fn() },
+        },
         { provide: Reflector, useValue: { get: jest.fn() } },
         { provide: PrismaService, useValue: {} },
       ],
@@ -55,12 +58,20 @@ describe('PermissionsController', () => {
 
   describe('findAll', () => {
     it('should delegate to permissionsService.findAll with query', async () => {
-      const perms = [{ id: 'p1', module: 'users', submodule: 'management', action: 'read' }];
+      const perms = [
+        { id: 'p1', module: 'users', submodule: 'management', action: 'read' },
+      ];
       permissionsService.findAll.mockResolvedValue(perms);
 
-      const result = await controller.findAll({ module: 'users', submodule: 'management' });
+      const result = await controller.findAll({
+        module: 'users',
+        submodule: 'management',
+      });
 
-      expect(permissionsService.findAll).toHaveBeenCalledWith({ module: 'users', submodule: 'management' });
+      expect(permissionsService.findAll).toHaveBeenCalledWith({
+        module: 'users',
+        submodule: 'management',
+      });
       expect(result).toEqual(perms);
     });
 
@@ -91,7 +102,12 @@ describe('PermissionsController', () => {
 
   describe('findOne', () => {
     it('should delegate to permissionsService.findOne', async () => {
-      const perm = { id: 'p1', module: 'users', submodule: 'management', action: 'read' };
+      const perm = {
+        id: 'p1',
+        module: 'users',
+        submodule: 'management',
+        action: 'read',
+      };
       permissionsService.findOne.mockResolvedValue(perm);
 
       const result = await controller.findOne('p1');
@@ -105,10 +121,19 @@ describe('PermissionsController', () => {
 
   describe('create', () => {
     it('should delegate to permissionsService.create and log audit', async () => {
-      const created = { id: 'p-new', module: 'users', submodule: 'management', action: 'delete' };
+      const created = {
+        id: 'p-new',
+        module: 'users',
+        submodule: 'management',
+        action: 'delete',
+      };
       permissionsService.create.mockResolvedValue(created);
 
-      const body = { module: 'users', submodule: 'management', action: 'delete' } as any;
+      const body = {
+        module: 'users',
+        submodule: 'management',
+        action: 'delete',
+      } as any;
       const result = await controller.create('admin-id', body, mockReq);
 
       expect(permissionsService.create).toHaveBeenCalledWith(body);
@@ -131,8 +156,20 @@ describe('PermissionsController', () => {
       const bulkResult = {
         message: '2 permisos creados',
         results: [
-          { module: 'a', submodule: 'b', action: 'c', status: 'created', id: 'p1' },
-          { module: 'd', submodule: 'e', action: 'f', status: 'created', id: 'p2' },
+          {
+            module: 'a',
+            submodule: 'b',
+            action: 'c',
+            status: 'created',
+            id: 'p1',
+          },
+          {
+            module: 'd',
+            submodule: 'e',
+            action: 'f',
+            status: 'created',
+            id: 'p2',
+          },
         ],
       };
       permissionsService.createBulk.mockResolvedValue(bulkResult);
@@ -160,7 +197,13 @@ describe('PermissionsController', () => {
 
   describe('update', () => {
     it('should delegate to permissionsService.update and log audit', async () => {
-      const updated = { id: 'p1', module: 'users', submodule: 'management', action: 'read', description: 'Updated' };
+      const updated = {
+        id: 'p1',
+        module: 'users',
+        submodule: 'management',
+        action: 'read',
+        description: 'Updated',
+      };
       permissionsService.update.mockResolvedValue(updated);
 
       const body = { description: 'Updated' } as any;
@@ -181,7 +224,9 @@ describe('PermissionsController', () => {
 
   describe('remove', () => {
     it('should delegate to permissionsService.remove and log audit', async () => {
-      permissionsService.remove.mockResolvedValue({ message: 'Permiso eliminado exitosamente' });
+      permissionsService.remove.mockResolvedValue({
+        message: 'Permiso eliminado exitosamente',
+      });
 
       const result = await controller.remove('p1', 'admin-id', mockReq);
 

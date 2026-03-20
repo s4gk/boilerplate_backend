@@ -26,10 +26,12 @@ import { SessionCleanupTask } from './common/tasks/session-cleanup.task';
       serveRoot: '/uploads',
     }),
     // Rate limiting global: 60 requests por minuto por IP
-    ThrottlerModule.forRoot([{
-      ttl: 60000,
-      limit: 60,
-    }]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 60,
+      },
+    ]),
     // Tareas programadas (cron jobs)
     ScheduleModule.forRoot(),
     CommonModule,

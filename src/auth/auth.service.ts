@@ -1,4 +1,10 @@
-import { Injectable, UnauthorizedException, ConflictException, ForbiddenException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+  ForbiddenException,
+  Logger,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
@@ -72,7 +78,10 @@ export class AuthService {
       );
     }
 
-    const isPasswordValid = await bcrypt.compare(data.password, user.password_hash);
+    const isPasswordValid = await bcrypt.compare(
+      data.password,
+      user.password_hash,
+    );
 
     if (!isPasswordValid) {
       await this.registerLoginAttempt({
@@ -95,7 +104,12 @@ export class AuthService {
     // Si tiene 2FA activado, devolver token temporal
     if (user.is_2fa_enabled && user.totp_secret) {
       const temp_token = this.jwtService.sign(
-        { sub: user.id, requires_2fa: true, ip_address: data.ip_address, user_agent: data.user_agent },
+        {
+          sub: user.id,
+          requires_2fa: true,
+          ip_address: data.ip_address,
+          user_agent: data.user_agent,
+        },
         { expiresIn: '5m' },
       );
 
@@ -182,7 +196,9 @@ export class AuthService {
     });
 
     if (deleted.count === 0) {
-      throw new UnauthorizedException('Sesion no encontrada o no pertenece a este usuario');
+      throw new UnauthorizedException(
+        'Sesion no encontrada o no pertenece a este usuario',
+      );
     }
 
     return { message: 'Sesion cerrada exitosamente' };
@@ -222,7 +238,9 @@ export class AuthService {
     });
 
     if (!user || !user.is_active || user.deleted_at) {
-      return { message: 'Si el correo existe, recibiras un codigo de verificacion' };
+      return {
+        message: 'Si el correo existe, recibiras un codigo de verificacion',
+      };
     }
 
     await this.prisma.password_reset_codes.deleteMany({
@@ -240,9 +258,15 @@ export class AuthService {
       },
     });
 
-    await this.emailService.sendResetCode(email, code, user.first_name ?? undefined);
+    await this.emailService.sendResetCode(
+      email,
+      code,
+      user.first_name ?? undefined,
+    );
 
-    return { message: 'Si el correo existe, recibiras un codigo de verificacion' };
+    return {
+      message: 'Si el correo existe, recibiras un codigo de verificacion',
+    };
   }
 
   // ─── VERIFY CODE (PASO 2) ──────────────────────────────
@@ -257,13 +281,19 @@ export class AuthService {
     }
 
     if (resetCode.expires_at < new Date()) {
-      await this.prisma.password_reset_codes.delete({ where: { id: resetCode.id } });
+      await this.prisma.password_reset_codes.delete({
+        where: { id: resetCode.id },
+      });
       throw new UnauthorizedException('El codigo ha expirado');
     }
 
     if (resetCode.attempts >= 5) {
-      await this.prisma.password_reset_codes.delete({ where: { id: resetCode.id } });
-      throw new ForbiddenException('Demasiados intentos. Solicita un nuevo codigo');
+      await this.prisma.password_reset_codes.delete({
+        where: { id: resetCode.id },
+      });
+      throw new ForbiddenException(
+        'Demasiados intentos. Solicita un nuevo codigo',
+      );
     }
 
     await this.prisma.password_reset_codes.update({
@@ -294,7 +324,9 @@ export class AuthService {
     }
 
     if (resetCode.expires_at < new Date()) {
-      await this.prisma.password_reset_codes.delete({ where: { id: resetCode.id } });
+      await this.prisma.password_reset_codes.delete({
+        where: { id: resetCode.id },
+      });
       throw new UnauthorizedException('El codigo ha expirado');
     }
 
@@ -406,7 +438,8 @@ export class AuthService {
         ...new Set(
           user.user_roles.flatMap((ur) =>
             ur.role.role_permissions.map(
-              (rp) => `${rp.permission.module}.${rp.permission.submodule}.${rp.permission.action}`,
+              (rp) =>
+                `${rp.permission.module}.${rp.permission.submodule}.${rp.permission.action}`,
             ),
           ),
         ),
@@ -442,12 +475,18 @@ export class AuthService {
     }
 
     if (user.is_2fa_enabled) {
-      throw new ConflictException('2FA ya esta activado. Desactivalo primero para reconfigurar.');
+      throw new ConflictException(
+        '2FA ya esta activado. Desactivalo primero para reconfigurar.',
+      );
     }
 
     const secret = generateSecret();
     const appName = process.env.SMTP_FROM_NAME || 'Dashboard';
-    const otpauthUrl = generateURI({ issuer: appName, label: user.email, secret });
+    const otpauthUrl = generateURI({
+      issuer: appName,
+      label: user.email,
+      secret,
+    });
     const qrCodeDataUrl = await QRCode.toDataURL(otpauthUrl);
 
     // Guardar secret temporalmente (no activado aun)
@@ -459,7 +498,8 @@ export class AuthService {
     return {
       secret,
       qr_code: qrCodeDataUrl,
-      message: 'Escanea el QR con Google Authenticator y verifica con el codigo',
+      message:
+        'Escanea el QR con Google Authenticator y verifica con el codigo',
     };
   }
 
@@ -471,10 +511,15 @@ export class AuthService {
     });
 
     if (!user || !user.totp_secret) {
-      throw new UnauthorizedException('Primero configura 2FA con /auth/2fa/setup');
+      throw new UnauthorizedException(
+        'Primero configura 2FA con /auth/2fa/setup',
+      );
     }
 
-    const { valid: isValid } = await otpVerify({ token: code, secret: user.totp_secret });
+    const { valid: isValid } = await otpVerify({
+      token: code,
+      secret: user.totp_secret,
+    });
 
     if (!isValid) {
       throw new UnauthorizedException('Codigo 2FA invalido');
@@ -499,7 +544,10 @@ export class AuthService {
       throw new UnauthorizedException('2FA no esta activado');
     }
 
-    const { valid: isValid } = await otpVerify({ token: code, secret: user.totp_secret });
+    const { valid: isValid } = await otpVerify({
+      token: code,
+      secret: user.totp_secret,
+    });
 
     if (!isValid) {
       throw new UnauthorizedException('Codigo 2FA invalido');
@@ -535,7 +583,10 @@ export class AuthService {
       throw new UnauthorizedException('Usuario no encontrado');
     }
 
-    const { valid: isValid } = await otpVerify({ token: code, secret: user.totp_secret });
+    const { valid: isValid } = await otpVerify({
+      token: code,
+      secret: user.totp_secret,
+    });
 
     if (!isValid) {
       throw new UnauthorizedException('Codigo 2FA invalido');

@@ -37,7 +37,12 @@ describe('SettingsService', () => {
       mockPrisma.settings.findMany.mockResolvedValue([
         { key: 'site_name', value: 'My App', group: 'general', type: 'string' },
         { key: 'max_users', value: '100', group: 'general', type: 'number' },
-        { key: 'smtp_host', value: 'smtp.test.com', group: 'email', type: 'string' },
+        {
+          key: 'smtp_host',
+          value: 'smtp.test.com',
+          group: 'email',
+          type: 'string',
+        },
       ]);
 
       const result = await service.findAll();
@@ -94,10 +99,19 @@ describe('SettingsService', () => {
 
   describe('upsert', () => {
     it('should upsert a setting', async () => {
-      const upserted = { key: 'site_name', value: 'New Name', group: 'general', type: 'string' };
+      const upserted = {
+        key: 'site_name',
+        value: 'New Name',
+        group: 'general',
+        type: 'string',
+      };
       mockPrisma.settings.upsert.mockResolvedValue(upserted);
 
-      const result = await service.upsert('site_name', { value: 'New Name', group: 'general', type: 'string' });
+      const result = await service.upsert('site_name', {
+        value: 'New Name',
+        group: 'general',
+        type: 'string',
+      });
 
       expect(result).toEqual(upserted);
       expect(mockPrisma.settings.upsert).toHaveBeenCalledWith({
@@ -154,19 +168,26 @@ describe('SettingsService', () => {
       const result = await service.remove('old_key');
 
       expect(result).toEqual({ message: 'Setting eliminado exitosamente' });
-      expect(mockPrisma.settings.delete).toHaveBeenCalledWith({ where: { key: 'old_key' } });
+      expect(mockPrisma.settings.delete).toHaveBeenCalledWith({
+        where: { key: 'old_key' },
+      });
     });
 
     it('should throw NotFoundException when setting does not exist', async () => {
       mockPrisma.settings.findUnique.mockResolvedValue(null);
 
-      await expect(service.remove('nonexistent')).rejects.toThrow(NotFoundException);
+      await expect(service.remove('nonexistent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
   describe('getValue', () => {
     it('should return the value when setting exists', async () => {
-      mockPrisma.settings.findUnique.mockResolvedValue({ key: 'site_name', value: 'My App' });
+      mockPrisma.settings.findUnique.mockResolvedValue({
+        key: 'site_name',
+        value: 'My App',
+      });
 
       const result = await service.getValue('site_name');
 
@@ -215,7 +236,12 @@ describe('SettingsService', () => {
 
     it('should cast json type', async () => {
       mockPrisma.settings.findMany.mockResolvedValue([
-        { key: 'config', value: '{"a":1,"b":"two"}', group: 'test', type: 'json' },
+        {
+          key: 'config',
+          value: '{"a":1,"b":"two"}',
+          group: 'test',
+          type: 'json',
+        },
       ]);
 
       const result = await service.findAll();

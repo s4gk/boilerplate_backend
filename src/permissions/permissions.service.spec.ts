@@ -27,7 +27,7 @@ describe('PermissionsService', () => {
     }).compile();
 
     service = module.get<PermissionsService>(PermissionsService);
-    prisma = module.get(PrismaService) as any;
+    prisma = module.get(PrismaService);
 
     jest.clearAllMocks();
   });
@@ -40,8 +40,22 @@ describe('PermissionsService', () => {
 
   describe('findAll', () => {
     const permissions = [
-      { id: 'perm-1', module: 'users', submodule: 'management', action: 'read', description: 'Read users', created_at: new Date() },
-      { id: 'perm-2', module: 'users', submodule: 'management', action: 'create', description: 'Create users', created_at: new Date() },
+      {
+        id: 'perm-1',
+        module: 'users',
+        submodule: 'management',
+        action: 'read',
+        description: 'Read users',
+        created_at: new Date(),
+      },
+      {
+        id: 'perm-2',
+        module: 'users',
+        submodule: 'management',
+        action: 'create',
+        description: 'Create users',
+        created_at: new Date(),
+      },
     ];
 
     it('should return all permissions with no filters', async () => {
@@ -106,9 +120,27 @@ describe('PermissionsService', () => {
   describe('findAllGrouped', () => {
     it('should return permissions grouped by module and submodule', async () => {
       mockPrisma.permissions.findMany.mockResolvedValue([
-        { id: 'p1', module: 'users', submodule: 'management', action: 'read', description: 'Read' },
-        { id: 'p2', module: 'users', submodule: 'management', action: 'create', description: 'Create' },
-        { id: 'p3', module: 'roles', submodule: 'settings', action: 'read', description: 'Read roles' },
+        {
+          id: 'p1',
+          module: 'users',
+          submodule: 'management',
+          action: 'read',
+          description: 'Read',
+        },
+        {
+          id: 'p2',
+          module: 'users',
+          submodule: 'management',
+          action: 'create',
+          description: 'Create',
+        },
+        {
+          id: 'p3',
+          module: 'roles',
+          submodule: 'settings',
+          action: 'read',
+          description: 'Read roles',
+        },
       ]);
 
       const result = await service.findAllGrouped();
@@ -116,13 +148,28 @@ describe('PermissionsService', () => {
       expect(result).toEqual({
         users: {
           management: [
-            { id: 'p1', action: 'read', description: 'Read', full: 'users.management.read' },
-            { id: 'p2', action: 'create', description: 'Create', full: 'users.management.create' },
+            {
+              id: 'p1',
+              action: 'read',
+              description: 'Read',
+              full: 'users.management.read',
+            },
+            {
+              id: 'p2',
+              action: 'create',
+              description: 'Create',
+              full: 'users.management.create',
+            },
           ],
         },
         roles: {
           settings: [
-            { id: 'p3', action: 'read', description: 'Read roles', full: 'roles.settings.read' },
+            {
+              id: 'p3',
+              action: 'read',
+              description: 'Read roles',
+              full: 'roles.settings.read',
+            },
           ],
         },
       });
@@ -172,7 +219,9 @@ describe('PermissionsService', () => {
     it('should throw NotFoundException when permission does not exist', async () => {
       mockPrisma.permissions.findUnique.mockResolvedValue(null);
 
-      await expect(service.findOne('nonexistent')).rejects.toThrow(NotFoundException);
+      await expect(service.findOne('nonexistent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -188,7 +237,11 @@ describe('PermissionsService', () => {
 
     it('should create a permission successfully', async () => {
       mockPrisma.permissions.findFirst.mockResolvedValue(null); // no duplicate
-      const createdPermission = { id: 'perm-new', ...createData, created_at: new Date() };
+      const createdPermission = {
+        id: 'perm-new',
+        ...createData,
+        created_at: new Date(),
+      };
       mockPrisma.permissions.create.mockResolvedValue(createdPermission);
 
       const result = await service.create(createData);
@@ -217,7 +270,9 @@ describe('PermissionsService', () => {
     it('should throw ConflictException when permission already exists', async () => {
       mockPrisma.permissions.findFirst.mockResolvedValue({ id: 'existing' });
 
-      await expect(service.create(createData)).rejects.toThrow(ConflictException);
+      await expect(service.create(createData)).rejects.toThrow(
+        ConflictException,
+      );
       expect(mockPrisma.permissions.create).not.toHaveBeenCalled();
     });
 
@@ -249,7 +304,9 @@ describe('PermissionsService', () => {
         })
         .mockRejectedValueOnce(new Error('Unique constraint failed'));
 
-      const result = await service.createBulk({ permissions: permissionsInput });
+      const result = await service.createBulk({
+        permissions: permissionsInput,
+      });
 
       expect(result.message).toBe('1 permisos creados');
       expect(result.results).toHaveLength(2);
@@ -261,8 +318,20 @@ describe('PermissionsService', () => {
 
     it('should handle all permissions created successfully', async () => {
       mockPrisma.permissions.create
-        .mockResolvedValueOnce({ id: 'p1', module: 'a', submodule: 'b', action: 'c', description: null })
-        .mockResolvedValueOnce({ id: 'p2', module: 'd', submodule: 'e', action: 'f', description: null });
+        .mockResolvedValueOnce({
+          id: 'p1',
+          module: 'a',
+          submodule: 'b',
+          action: 'c',
+          description: null,
+        })
+        .mockResolvedValueOnce({
+          id: 'p2',
+          module: 'd',
+          submodule: 'e',
+          action: 'f',
+          description: null,
+        });
 
       const result = await service.createBulk({
         permissions: [
@@ -288,7 +357,9 @@ describe('PermissionsService', () => {
       });
 
       expect(result.message).toBe('0 permisos creados');
-      expect(result.results.every((r) => r.status === 'already_exists')).toBe(true);
+      expect(result.results.every((r) => r.status === 'already_exists')).toBe(
+        true,
+      );
     });
   });
 
@@ -335,7 +406,9 @@ describe('PermissionsService', () => {
     it('should throw NotFoundException when permission does not exist', async () => {
       mockPrisma.permissions.findUnique.mockResolvedValue(null);
 
-      await expect(service.update('nonexistent', updateData)).rejects.toThrow(NotFoundException);
+      await expect(service.update('nonexistent', updateData)).rejects.toThrow(
+        NotFoundException,
+      );
       expect(mockPrisma.permissions.update).not.toHaveBeenCalled();
     });
   });
@@ -355,13 +428,17 @@ describe('PermissionsService', () => {
       const result = await service.remove('perm-1');
 
       expect(result).toEqual({ message: 'Permiso eliminado exitosamente' });
-      expect(mockPrisma.permissions.delete).toHaveBeenCalledWith({ where: { id: 'perm-1' } });
+      expect(mockPrisma.permissions.delete).toHaveBeenCalledWith({
+        where: { id: 'perm-1' },
+      });
     });
 
     it('should throw NotFoundException when permission does not exist', async () => {
       mockPrisma.permissions.findUnique.mockResolvedValue(null);
 
-      await expect(service.remove('nonexistent')).rejects.toThrow(NotFoundException);
+      await expect(service.remove('nonexistent')).rejects.toThrow(
+        NotFoundException,
+      );
       expect(mockPrisma.permissions.delete).not.toHaveBeenCalled();
     });
   });

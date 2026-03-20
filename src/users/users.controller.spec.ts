@@ -67,7 +67,10 @@ describe('UsersController', () => {
         { provide: UsersService, useValue: usersService },
         { provide: UploadsService, useValue: uploadsService },
         { provide: AuditService, useValue: auditService },
-        { provide: JwtService, useValue: { sign: jest.fn(), verify: jest.fn() } },
+        {
+          provide: JwtService,
+          useValue: { sign: jest.fn(), verify: jest.fn() },
+        },
         { provide: Reflector, useValue: { get: jest.fn() } },
         { provide: PrismaService, useValue: {} },
       ],
@@ -87,7 +90,9 @@ describe('UsersController', () => {
   describe('findAll', () => {
     it('should delegate to usersService.findAll with parsed query', async () => {
       const serviceResult = {
-        data: [{ id: 'u1', email: 'a@b.com', avatar_url: null, signature_url: null }],
+        data: [
+          { id: 'u1', email: 'a@b.com', avatar_url: null, signature_url: null },
+        ],
         meta: { total: 1, page: 1, limit: 10, total_pages: 1 },
       };
       usersService.findAll.mockResolvedValue(serviceResult);
@@ -107,7 +112,10 @@ describe('UsersController', () => {
     });
 
     it('should handle missing query params gracefully', async () => {
-      usersService.findAll.mockResolvedValue({ data: [], meta: { total: 0, page: 1, limit: 10, total_pages: 0 } });
+      usersService.findAll.mockResolvedValue({
+        data: [],
+        meta: { total: 0, page: 1, limit: 10, total_pages: 0 },
+      });
 
       await controller.findAll({}, mockReq);
 
@@ -124,7 +132,12 @@ describe('UsersController', () => {
 
   describe('findOne', () => {
     it('should delegate to usersService.findOne', async () => {
-      const user = { id: 'u1', email: 'a@b.com', avatar_url: null, signature_url: null };
+      const user = {
+        id: 'u1',
+        email: 'a@b.com',
+        avatar_url: null,
+        signature_url: null,
+      };
       usersService.findOne.mockResolvedValue(user);
 
       const result = await controller.findOne('u1', mockReq);
@@ -138,11 +151,22 @@ describe('UsersController', () => {
 
   describe('create', () => {
     it('should delegate to usersService.create and log audit', async () => {
-      const createdUser = { id: 'new-id', email: 'new@b.com', username: 'new', avatar_url: null, signature_url: null };
+      const createdUser = {
+        id: 'new-id',
+        email: 'new@b.com',
+        username: 'new',
+        avatar_url: null,
+        signature_url: null,
+      };
       usersService.create.mockResolvedValue(createdUser);
 
       const body = { email: 'new@b.com', first_name: 'New' } as any;
-      const result = await controller.create('admin-id', body, mockReq, {} as any);
+      const result = await controller.create(
+        'admin-id',
+        body,
+        mockReq,
+        {} as any,
+      );
 
       expect(usersService.create).toHaveBeenCalledWith(
         expect.objectContaining({ email: 'new@b.com' }),
@@ -160,14 +184,28 @@ describe('UsersController', () => {
     });
 
     it('should upload avatar when file provided', async () => {
-      const createdUser = { id: 'new-id', email: 'x@b.com', username: 'x', avatar_url: '/uploads/avatars/abc.jpg', signature_url: null };
+      const createdUser = {
+        id: 'new-id',
+        email: 'x@b.com',
+        username: 'x',
+        avatar_url: '/uploads/avatars/abc.jpg',
+        signature_url: null,
+      };
       usersService.create.mockResolvedValue(createdUser);
       uploadsService.saveFile.mockReturnValue('/uploads/avatars/abc.jpg');
 
       const files = { avatar: [{ originalname: 'photo.jpg' }] } as any;
-      await controller.create('admin-id', { email: 'x@b.com' } as any, mockReq, files);
+      await controller.create(
+        'admin-id',
+        { email: 'x@b.com' } as any,
+        mockReq,
+        files,
+      );
 
-      expect(uploadsService.saveFile).toHaveBeenCalledWith(files.avatar[0], 'avatars');
+      expect(uploadsService.saveFile).toHaveBeenCalledWith(
+        files.avatar[0],
+        'avatars',
+      );
       expect(usersService.create).toHaveBeenCalledWith(
         expect.objectContaining({ avatar_url: '/uploads/avatars/abc.jpg' }),
         'admin-id',
@@ -179,13 +217,29 @@ describe('UsersController', () => {
 
   describe('update', () => {
     it('should delegate to usersService.update and log audit', async () => {
-      const updatedUser = { id: 'u1', email: 'a@b.com', first_name: 'Updated', avatar_url: null, signature_url: null };
+      const updatedUser = {
+        id: 'u1',
+        email: 'a@b.com',
+        first_name: 'Updated',
+        avatar_url: null,
+        signature_url: null,
+      };
       usersService.update.mockResolvedValue(updatedUser);
 
       const body = { first_name: 'Updated' } as any;
-      const result = await controller.update('u1', 'admin-id', body, mockReq, {} as any);
+      const result = await controller.update(
+        'u1',
+        'admin-id',
+        body,
+        mockReq,
+        {} as any,
+      );
 
-      expect(usersService.update).toHaveBeenCalledWith('u1', expect.objectContaining({ first_name: 'Updated' }), 'admin-id');
+      expect(usersService.update).toHaveBeenCalledWith(
+        'u1',
+        expect.objectContaining({ first_name: 'Updated' }),
+        'admin-id',
+      );
       expect(auditService.log).toHaveBeenCalledWith(
         expect.objectContaining({
           module: 'configuracion',
@@ -202,7 +256,9 @@ describe('UsersController', () => {
 
   describe('remove', () => {
     it('should delegate to usersService.remove and log audit', async () => {
-      usersService.remove.mockResolvedValue({ message: 'Usuario eliminado exitosamente' });
+      usersService.remove.mockResolvedValue({
+        message: 'Usuario eliminado exitosamente',
+      });
 
       const result = await controller.remove('u1', 'admin-id', mockReq);
 
@@ -221,11 +277,22 @@ describe('UsersController', () => {
 
   describe('changePassword', () => {
     it('should delegate to usersService.changePassword', async () => {
-      usersService.changePassword.mockResolvedValue({ message: 'Contrasena actualizada exitosamente' });
+      usersService.changePassword.mockResolvedValue({
+        message: 'Contrasena actualizada exitosamente',
+      });
 
-      const result = await controller.changePassword('u1', 'admin-id', { new_password: 'New123!' } as any, mockReq);
+      const result = await controller.changePassword(
+        'u1',
+        'admin-id',
+        { new_password: 'New123!' } as any,
+        mockReq,
+      );
 
-      expect(usersService.changePassword).toHaveBeenCalledWith('u1', { new_password: 'New123!' }, 'admin-id');
+      expect(usersService.changePassword).toHaveBeenCalledWith(
+        'u1',
+        { new_password: 'New123!' },
+        'admin-id',
+      );
       expect(result.message).toBe('Contrasena actualizada exitosamente');
     });
   });
@@ -234,7 +301,10 @@ describe('UsersController', () => {
 
   describe('toggleStatus', () => {
     it('should delegate to usersService.toggleStatus and log audit', async () => {
-      usersService.toggleStatus.mockResolvedValue({ message: 'Usuario desactivado', is_active: false });
+      usersService.toggleStatus.mockResolvedValue({
+        message: 'Usuario desactivado',
+        is_active: false,
+      });
 
       const result = await controller.toggleStatus('u1', 'admin-id', mockReq);
 
@@ -264,12 +334,23 @@ describe('UsersController', () => {
 
   describe('assignRoles', () => {
     it('should delegate to usersService.assignRoles and log audit', async () => {
-      usersService.assignRoles.mockResolvedValue({ message: 'Roles asignados exitosamente' });
+      usersService.assignRoles.mockResolvedValue({
+        message: 'Roles asignados exitosamente',
+      });
 
       const body = { role_ids: ['r1', 'r2'] } as any;
-      const result = await controller.assignRoles('u1', 'admin-id', body, mockReq);
+      const result = await controller.assignRoles(
+        'u1',
+        'admin-id',
+        body,
+        mockReq,
+      );
 
-      expect(usersService.assignRoles).toHaveBeenCalledWith('u1', body, 'admin-id');
+      expect(usersService.assignRoles).toHaveBeenCalledWith(
+        'u1',
+        body,
+        'admin-id',
+      );
       expect(auditService.log).toHaveBeenCalled();
       expect(result.message).toBe('Roles asignados exitosamente');
     });
@@ -279,9 +360,16 @@ describe('UsersController', () => {
 
   describe('removeRole', () => {
     it('should delegate to usersService.removeRole and log audit', async () => {
-      usersService.removeRole.mockResolvedValue({ message: 'Rol removido exitosamente' });
+      usersService.removeRole.mockResolvedValue({
+        message: 'Rol removido exitosamente',
+      });
 
-      const result = await controller.removeRole('u1', 'r1', 'admin-id', mockReq);
+      const result = await controller.removeRole(
+        'u1',
+        'r1',
+        'admin-id',
+        mockReq,
+      );
 
       expect(usersService.removeRole).toHaveBeenCalledWith('u1', 'r1');
       expect(auditService.log).toHaveBeenCalled();
@@ -307,12 +395,23 @@ describe('UsersController', () => {
 
   describe('assignExtraPermissions', () => {
     it('should delegate to usersService.assignExtraPermissions and log audit', async () => {
-      usersService.assignExtraPermissions.mockResolvedValue({ message: 'Permisos extra asignados exitosamente' });
+      usersService.assignExtraPermissions.mockResolvedValue({
+        message: 'Permisos extra asignados exitosamente',
+      });
 
       const body = { permission_ids: ['p1', 'p2'] } as any;
-      const result = await controller.assignExtraPermissions('u1', 'admin-id', body, mockReq);
+      const result = await controller.assignExtraPermissions(
+        'u1',
+        'admin-id',
+        body,
+        mockReq,
+      );
 
-      expect(usersService.assignExtraPermissions).toHaveBeenCalledWith('u1', body, 'admin-id');
+      expect(usersService.assignExtraPermissions).toHaveBeenCalledWith(
+        'u1',
+        body,
+        'admin-id',
+      );
       expect(auditService.log).toHaveBeenCalled();
       expect(result.message).toBe('Permisos extra asignados exitosamente');
     });
@@ -322,12 +421,23 @@ describe('UsersController', () => {
 
   describe('replaceExtraPermissions', () => {
     it('should delegate to usersService.replaceExtraPermissions and log audit', async () => {
-      usersService.replaceExtraPermissions.mockResolvedValue({ message: 'Permisos extra actualizados exitosamente' });
+      usersService.replaceExtraPermissions.mockResolvedValue({
+        message: 'Permisos extra actualizados exitosamente',
+      });
 
       const body = { permission_ids: ['p3'] } as any;
-      const result = await controller.replaceExtraPermissions('u1', 'admin-id', body, mockReq);
+      const result = await controller.replaceExtraPermissions(
+        'u1',
+        'admin-id',
+        body,
+        mockReq,
+      );
 
-      expect(usersService.replaceExtraPermissions).toHaveBeenCalledWith('u1', body, 'admin-id');
+      expect(usersService.replaceExtraPermissions).toHaveBeenCalledWith(
+        'u1',
+        body,
+        'admin-id',
+      );
       expect(auditService.log).toHaveBeenCalled();
       expect(result.message).toBe('Permisos extra actualizados exitosamente');
     });
@@ -337,11 +447,21 @@ describe('UsersController', () => {
 
   describe('removeExtraPermission', () => {
     it('should delegate to usersService.removeExtraPermission and log audit', async () => {
-      usersService.removeExtraPermission.mockResolvedValue({ message: 'Permiso extra removido exitosamente' });
+      usersService.removeExtraPermission.mockResolvedValue({
+        message: 'Permiso extra removido exitosamente',
+      });
 
-      const result = await controller.removeExtraPermission('u1', 'p1', 'admin-id', mockReq);
+      const result = await controller.removeExtraPermission(
+        'u1',
+        'p1',
+        'admin-id',
+        mockReq,
+      );
 
-      expect(usersService.removeExtraPermission).toHaveBeenCalledWith('u1', 'p1');
+      expect(usersService.removeExtraPermission).toHaveBeenCalledWith(
+        'u1',
+        'p1',
+      );
       expect(auditService.log).toHaveBeenCalled();
       expect(result.message).toBe('Permiso extra removido exitosamente');
     });

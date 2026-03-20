@@ -133,7 +133,14 @@ describe('AuditService', () => {
           where: {},
           orderBy: { created_at: 'desc' },
           include: {
-            user: { select: { id: true, email: true, first_name: true, last_name: true } },
+            user: {
+              select: {
+                id: true,
+                email: true,
+                first_name: true,
+                last_name: true,
+              },
+            },
           },
         },
         { page: 1, limit: 10 },
@@ -141,7 +148,10 @@ describe('AuditService', () => {
     });
 
     it('should filter by module', async () => {
-      mockPaginate.mockResolvedValue({ data: [], meta: { total: 0, page: 1, limit: 10, total_pages: 0 } });
+      mockPaginate.mockResolvedValue({
+        data: [],
+        meta: { total: 0, page: 1, limit: 10, total_pages: 0 },
+      });
 
       await service.findAll({ module: 'users' });
 
@@ -155,7 +165,10 @@ describe('AuditService', () => {
     });
 
     it('should filter by submodule', async () => {
-      mockPaginate.mockResolvedValue({ data: [], meta: { total: 0, page: 1, limit: 10, total_pages: 0 } });
+      mockPaginate.mockResolvedValue({
+        data: [],
+        meta: { total: 0, page: 1, limit: 10, total_pages: 0 },
+      });
 
       await service.findAll({ submodule: 'profile' });
 
@@ -169,7 +182,10 @@ describe('AuditService', () => {
     });
 
     it('should filter by action', async () => {
-      mockPaginate.mockResolvedValue({ data: [], meta: { total: 0, page: 1, limit: 10, total_pages: 0 } });
+      mockPaginate.mockResolvedValue({
+        data: [],
+        meta: { total: 0, page: 1, limit: 10, total_pages: 0 },
+      });
 
       await service.findAll({ action: 'delete' });
 
@@ -183,7 +199,10 @@ describe('AuditService', () => {
     });
 
     it('should filter by user_id', async () => {
-      mockPaginate.mockResolvedValue({ data: [], meta: { total: 0, page: 1, limit: 10, total_pages: 0 } });
+      mockPaginate.mockResolvedValue({
+        data: [],
+        meta: { total: 0, page: 1, limit: 10, total_pages: 0 },
+      });
 
       await service.findAll({ user_id: 'user-1' });
 
@@ -197,7 +216,10 @@ describe('AuditService', () => {
     });
 
     it('should filter by resource_id', async () => {
-      mockPaginate.mockResolvedValue({ data: [], meta: { total: 0, page: 1, limit: 10, total_pages: 0 } });
+      mockPaginate.mockResolvedValue({
+        data: [],
+        meta: { total: 0, page: 1, limit: 10, total_pages: 0 },
+      });
 
       await service.findAll({ resource_id: 'res-1' });
 
@@ -211,7 +233,10 @@ describe('AuditService', () => {
     });
 
     it('should filter by date range', async () => {
-      mockPaginate.mockResolvedValue({ data: [], meta: { total: 0, page: 1, limit: 10, total_pages: 0 } });
+      mockPaginate.mockResolvedValue({
+        data: [],
+        meta: { total: 0, page: 1, limit: 10, total_pages: 0 },
+      });
 
       await service.findAll({
         date_from: '2026-01-01',
@@ -233,7 +258,10 @@ describe('AuditService', () => {
     });
 
     it('should combine multiple filters', async () => {
-      mockPaginate.mockResolvedValue({ data: [], meta: { total: 0, page: 1, limit: 10, total_pages: 0 } });
+      mockPaginate.mockResolvedValue({
+        data: [],
+        meta: { total: 0, page: 1, limit: 10, total_pages: 0 },
+      });
 
       await service.findAll({
         module: 'users',

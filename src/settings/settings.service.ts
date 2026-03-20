@@ -29,7 +29,10 @@ export class SettingsService {
     return { ...setting, value: this.castValue(setting.value, setting.type) };
   }
 
-  async upsert(key: string, data: { value: string; group?: string; type?: string }) {
+  async upsert(
+    key: string,
+    data: { value: string; group?: string; type?: string },
+  ) {
     return this.prisma.settings.upsert({
       where: { key },
       update: { value: data.value, updated_at: new Date() },
@@ -42,7 +45,9 @@ export class SettingsService {
     });
   }
 
-  async upsertBulk(settings: { key: string; value: string; group?: string; type?: string }[]) {
+  async upsertBulk(
+    settings: { key: string; value: string; group?: string; type?: string }[],
+  ) {
     const results = await Promise.all(
       settings.map((s) => this.upsert(s.key, s)),
     );
@@ -64,11 +69,18 @@ export class SettingsService {
 
   private castValue(value: string, type: string): any {
     switch (type) {
-      case 'number': return Number(value);
-      case 'boolean': return value === 'true';
+      case 'number':
+        return Number(value);
+      case 'boolean':
+        return value === 'true';
       case 'json':
-        try { return JSON.parse(value); } catch { return value; }
-      default: return value;
+        try {
+          return JSON.parse(value);
+        } catch {
+          return value;
+        }
+      default:
+        return value;
     }
   }
 }

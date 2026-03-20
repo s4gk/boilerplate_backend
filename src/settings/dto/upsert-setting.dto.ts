@@ -17,7 +17,10 @@ export class UpsertSettingDto {
   @MaxLength(50)
   group?: string;
 
-  @ApiPropertyOptional({ example: 'string', enum: ['string', 'number', 'boolean', 'json'] })
+  @ApiPropertyOptional({
+    example: 'string',
+    enum: ['string', 'number', 'boolean', 'json'],
+  })
   @IsOptional()
   @IsString()
   type?: string;

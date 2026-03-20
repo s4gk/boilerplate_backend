@@ -139,10 +139,15 @@ export class EmailService implements OnModuleInit {
 
     try {
       const info = await this.transporter.sendMail(mailOptions);
-      this.logger.log(`Email de notificación admin reset enviado: ${info.messageId}`);
+      this.logger.log(
+        `Email de notificación admin reset enviado: ${info.messageId}`,
+      );
       return info;
     } catch (error) {
-      this.logger.error('Error enviando email de notificación admin reset', error);
+      this.logger.error(
+        'Error enviando email de notificación admin reset',
+        error,
+      );
       throw error;
     }
   }

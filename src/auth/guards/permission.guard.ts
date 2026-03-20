@@ -1,4 +1,9 @@
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -43,10 +48,7 @@ export class PermissionGuard implements CanActivate {
           user_roles: {
             some: {
               user_id: user.id,
-              OR: [
-                { expires_at: null },
-                { expires_at: { gt: new Date() } },
-              ],
+              OR: [{ expires_at: null }, { expires_at: { gt: new Date() } }],
             },
           },
           is_active: true,

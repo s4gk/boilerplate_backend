@@ -33,8 +33,12 @@ export class AllExceptionsFilter implements ExceptionFilter {
         error = obj.error || this.getErrorName(statusCode);
 
         // Detectar error de multipart enviado como JSON
-        if (statusCode === HttpStatus.BAD_REQUEST && this.isMultipartJsonError(obj)) {
-          message = 'Se detectó un body multipart enviado como JSON. Si usas FormData, no envíes el header Content-Type manualmente.';
+        if (
+          statusCode === HttpStatus.BAD_REQUEST &&
+          this.isMultipartJsonError(obj)
+        ) {
+          message =
+            'Se detectó un body multipart enviado como JSON. Si usas FormData, no envíes el header Content-Type manualmente.';
         }
       }
     } else if (this.isPrismaError(exception)) {
@@ -43,9 +47,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
       message = prismaResult.message;
       error = prismaResult.error;
     } else if (exception instanceof Error) {
-      message = process.env.NODE_ENV === 'production'
-        ? 'Error interno del servidor'
-        : exception.message;
+      message =
+        process.env.NODE_ENV === 'production'
+          ? 'Error interno del servidor'
+          : exception.message;
     }
 
     // Log errores 5xx con stack trace

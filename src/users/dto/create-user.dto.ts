@@ -1,4 +1,13 @@
-import { IsEmail, IsString, MaxLength, IsOptional, IsUUID, IsDateString, IsBooleanString, IsArray } from 'class-validator';
+import {
+  IsEmail,
+  IsString,
+  MaxLength,
+  IsOptional,
+  IsUUID,
+  IsDateString,
+  IsBooleanString,
+  IsArray,
+} from 'class-validator';
 import { Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -30,7 +39,10 @@ export class CreateUserDto {
   @MaxLength(20)
   document_number?: string;
 
-  @ApiPropertyOptional({ example: 'CC', description: 'Tipo de documento (CC, CE, NIT, etc.)' })
+  @ApiPropertyOptional({
+    example: 'CC',
+    description: 'Tipo de documento (CC, CE, NIT, etc.)',
+  })
   @IsOptional()
   @IsString()
   document_type?: string;
@@ -91,7 +103,10 @@ export class CreateUserDto {
   @Transform(({ value }) => value || undefined) // 👈 agrega en area_id, sede_id y role_id
   area_id?: string;
 
-  @ApiPropertyOptional({ description: 'Array de UUIDs de sedes', example: ['uuid1', 'uuid2'] })
+  @ApiPropertyOptional({
+    description: 'Array de UUIDs de sedes',
+    example: ['uuid1', 'uuid2'],
+  })
   @IsOptional()
   @IsArray()
   @IsUUID('4', { each: true })

@@ -57,7 +57,7 @@ describe('NotificationsGateway', () => {
       });
       mockJwtService.verify.mockReturnValue({ sub: 'user-123' });
 
-      await gateway.handleConnection(client as any);
+      await gateway.handleConnection(client);
 
       expect(mockJwtService.verify).toHaveBeenCalledWith('valid-token');
       expect(client.data.userId).toBe('user-123');
@@ -74,7 +74,7 @@ describe('NotificationsGateway', () => {
       });
       mockJwtService.verify.mockReturnValue({ sub: 'user-456' });
 
-      await gateway.handleConnection(client as any);
+      await gateway.handleConnection(client);
 
       expect(mockJwtService.verify).toHaveBeenCalledWith('header-token');
       expect(client.data.userId).toBe('user-456');
@@ -89,7 +89,7 @@ describe('NotificationsGateway', () => {
         },
       });
 
-      await gateway.handleConnection(client as any);
+      await gateway.handleConnection(client);
 
       expect(client.disconnect).toHaveBeenCalled();
       expect(client.join).not.toHaveBeenCalled();
@@ -106,7 +106,7 @@ describe('NotificationsGateway', () => {
         throw new Error('Invalid token');
       });
 
-      await gateway.handleConnection(client as any);
+      await gateway.handleConnection(client);
 
       expect(client.disconnect).toHaveBeenCalled();
       expect(client.join).not.toHaveBeenCalled();
@@ -119,14 +119,14 @@ describe('NotificationsGateway', () => {
       client.data = { userId: 'user-123' };
 
       // Should not throw
-      expect(() => gateway.handleDisconnect(client as any)).not.toThrow();
+      expect(() => gateway.handleDisconnect(client)).not.toThrow();
     });
 
     it('should handle disconnection for unauthenticated client', () => {
       const client = createMockSocket();
       client.data = {};
 
-      expect(() => gateway.handleDisconnect(client as any)).not.toThrow();
+      expect(() => gateway.handleDisconnect(client)).not.toThrow();
     });
   });
 

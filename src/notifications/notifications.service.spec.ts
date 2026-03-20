@@ -84,7 +84,11 @@ describe('NotificationsService', () => {
     });
 
     it('should default type to info when not provided', async () => {
-      const dataWithoutType = { user_id: 'user-1', title: 'Test', message: 'msg' };
+      const dataWithoutType = {
+        user_id: 'user-1',
+        title: 'Test',
+        message: 'msg',
+      };
       mockPrisma.notifications.create.mockResolvedValue(createdNotification);
 
       await service.create(dataWithoutType);

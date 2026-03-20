@@ -15,13 +15,19 @@ export class DashboardService {
     ] = await Promise.all([
       this.prisma.users.count({ where: { deleted_at: null } }),
       this.prisma.users.count({ where: { deleted_at: null, is_active: true } }),
-      this.prisma.users.count({ where: { deleted_at: null, is_active: false } }),
+      this.prisma.users.count({
+        where: { deleted_at: null, is_active: false },
+      }),
       this.prisma.roles.count({ where: { is_active: true } }),
       this.prisma.permissions.count(),
     ]);
 
     return {
-      users: { total: totalUsers, active: activeUsers, inactive: inactiveUsers },
+      users: {
+        total: totalUsers,
+        active: activeUsers,
+        inactive: inactiveUsers,
+      },
       roles: totalRoles,
       permissions: totalPermissions,
     };
@@ -41,7 +47,7 @@ export class DashboardService {
     const failed = attempts.find((a) => !a.success)?._count || 0;
 
     // Daily breakdown
-    const daily = await this.prisma.$queryRaw`
+    const daily = await this.prisma.$queryRaw<{ date: Date; successful: bigint; failed: bigint }[]>`
       SELECT
         DATE(created_at) as date,
         COUNT(*) FILTER (WHERE success = true) as successful,
@@ -50,7 +56,7 @@ export class DashboardService {
       WHERE created_at >= ${since}
       GROUP BY DATE(created_at)
       ORDER BY date DESC
-    ` as { date: Date; successful: bigint; failed: bigint }[];
+    `;
 
     return {
       period_days: days,
@@ -86,7 +92,7 @@ export class DashboardService {
     const since = new Date();
     since.setDate(since.getDate() - days);
 
-    const daily = await this.prisma.$queryRaw`
+    const daily = await this.prisma.$queryRaw<{ date: Date; count: bigint }[]>`
       SELECT
         DATE(created_at) as date,
         COUNT(*) as count
@@ -94,7 +100,7 @@ export class DashboardService {
       WHERE created_at >= ${since} AND deleted_at IS NULL
       GROUP BY DATE(created_at)
       ORDER BY date DESC
-    ` as { date: Date; count: bigint }[];
+    `;
 
     return {
       period_days: days,

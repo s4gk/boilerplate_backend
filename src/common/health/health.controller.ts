@@ -23,9 +23,8 @@ export class HealthController {
     }
 
     const status = database === 'connected' ? 'ok' : 'degraded';
-    const httpStatus = database === 'connected'
-      ? HttpStatus.OK
-      : HttpStatus.SERVICE_UNAVAILABLE;
+    const httpStatus =
+      database === 'connected' ? HttpStatus.OK : HttpStatus.SERVICE_UNAVAILABLE;
 
     res.status(httpStatus).json({
       status,

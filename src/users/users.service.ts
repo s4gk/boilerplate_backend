@@ -1,4 +1,11 @@
-import { Injectable, NotFoundException, ConflictException, BadRequestException, ForbiddenException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+  ForbiddenException,
+  Logger,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../email/email.service';
 import * as bcrypt from 'bcrypt';
@@ -190,30 +197,33 @@ export class UsersService {
   }
 
   // ─── CREAR USUARIO ─────────────────────────────────────
-  async create(data: {
-    email: string;
-    password?: string;
-    first_name?: string;
-    last_name?: string;
-    document_number?: string;
-    document_type?: string;
-    hire_date?: string;
-    blood_type?: string;
-    eps?: string;
-    pension_fund?: string;
-    address?: string;
-    city?: string;
-    department?: string;
-    country?: string;
-    phone?: string;
-    phone_alt?: string;
-    area_id?: string;
-    sede_ids?: string[];
-    role_id?: string;
-    avatar_url?: string;
-    signature_url?: string;
-    document_urls?: string[];
-  }, assigned_by: string) {
+  async create(
+    data: {
+      email: string;
+      password?: string;
+      first_name?: string;
+      last_name?: string;
+      document_number?: string;
+      document_type?: string;
+      hire_date?: string;
+      blood_type?: string;
+      eps?: string;
+      pension_fund?: string;
+      address?: string;
+      city?: string;
+      department?: string;
+      country?: string;
+      phone?: string;
+      phone_alt?: string;
+      area_id?: string;
+      sede_ids?: string[];
+      role_id?: string;
+      avatar_url?: string;
+      signature_url?: string;
+      document_urls?: string[];
+    },
+    assigned_by: string,
+  ) {
     const existing = await this.prisma.users.findFirst({
       where: { email: data.email },
     });
@@ -223,7 +233,10 @@ export class UsersService {
     }
 
     // Generar username a partir del email
-    const baseUsername = data.email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '').slice(0, 45);
+    const baseUsername = data.email
+      .split('@')[0]
+      .replace(/[^a-zA-Z0-9]/g, '')
+      .slice(0, 45);
     let username = baseUsername;
     let counter = 1;
     while (await this.prisma.users.findFirst({ where: { username } })) {
@@ -297,34 +310,40 @@ export class UsersService {
 
     this.emailService
       .sendWelcomeCredentials(data.email, plainPassword, data.first_name)
-      .catch((err) => this.logger.error('Error enviando credenciales por correo', err));
+      .catch((err) =>
+        this.logger.error('Error enviando credenciales por correo', err),
+      );
 
     return user;
   }
 
   // ─── ACTUALIZAR USUARIO ────────────────────────────────
-  async update(id: string, data: {
-    email?: string;
-    first_name?: string;
-    last_name?: string;
-    avatar_url?: string;
-    document_number?: string;
-    document_type?: string;
-    hire_date?: string;
-    blood_type?: string;
-    eps?: string;
-    pension_fund?: string;
-    address?: string;
-    city?: string;
-    department?: string;
-    country?: string;
-    phone?: string;
-    phone_alt?: string;
-    area_id?: string | null;
-    sede_id?: string | null;
-    is_active?: boolean;
-    role_id?: string;
-  }, updated_by?: string) {
+  async update(
+    id: string,
+    data: {
+      email?: string;
+      first_name?: string;
+      last_name?: string;
+      avatar_url?: string;
+      document_number?: string;
+      document_type?: string;
+      hire_date?: string;
+      blood_type?: string;
+      eps?: string;
+      pension_fund?: string;
+      address?: string;
+      city?: string;
+      department?: string;
+      country?: string;
+      phone?: string;
+      phone_alt?: string;
+      area_id?: string | null;
+      sede_id?: string | null;
+      is_active?: boolean;
+      role_id?: string;
+    },
+    updated_by?: string,
+  ) {
     const user = await this.prisma.users.findFirst({
       where: { id, deleted_at: null },
     });
@@ -437,9 +456,13 @@ export class UsersService {
   }
 
   // ─── CAMBIAR CONTRASENA ────────────────────────────────
-  async changePassword(id: string, data: {
-    new_password: string;
-  }, changed_by: string) {
+  async changePassword(
+    id: string,
+    data: {
+      new_password: string;
+    },
+    changed_by: string,
+  ) {
     const user = await this.prisma.users.findFirst({
       where: { id, deleted_at: null },
     });
@@ -455,7 +478,10 @@ export class UsersService {
       select: { password_hash: true },
     });
 
-    const hashesToCheck = [user.password_hash, ...passwordHistory.map((h) => h.password_hash)];
+    const hashesToCheck = [
+      user.password_hash,
+      ...passwordHistory.map((h) => h.password_hash),
+    ];
 
     for (const oldHash of hashesToCheck) {
       if (await bcrypt.compare(data.new_password, oldHash)) {
@@ -486,9 +512,13 @@ export class UsersService {
   }
 
   // ─── RESET PASSWORD POR ADMIN ─────────────────────────
-  async adminResetPassword(id: string, data: {
-    new_password: string;
-  }, changed_by: string) {
+  async adminResetPassword(
+    id: string,
+    data: {
+      new_password: string;
+    },
+    changed_by: string,
+  ) {
     const result = await this.changePassword(id, data, changed_by);
 
     const user = await this.prisma.users.findFirst({
@@ -499,7 +529,12 @@ export class UsersService {
     if (user) {
       this.emailService
         .sendAdminPasswordReset(user.email, user.first_name ?? undefined)
-        .catch((err) => this.logger.error('Error enviando notificacion de reset por admin', err));
+        .catch((err) =>
+          this.logger.error(
+            'Error enviando notificacion de reset por admin',
+            err,
+          ),
+        );
     }
 
     return result;
@@ -554,10 +589,14 @@ export class UsersService {
   }
 
   // ─── ASIGNAR ROLES ─────────────────────────────────────
-  async assignRoles(id: string, data: {
-    role_ids: string[];
-    expires_at?: string;
-  }, assigned_by: string) {
+  async assignRoles(
+    id: string,
+    data: {
+      role_ids: string[];
+      expires_at?: string;
+    },
+    assigned_by: string,
+  ) {
     const user = await this.prisma.users.findFirst({
       where: { id, deleted_at: null },
     });
@@ -619,13 +658,13 @@ export class UsersService {
       throw new NotFoundException('Usuario no encontrado');
     }
 
-    const rolePermissions = await this.prisma.$queryRaw`
+    const rolePermissions = await this.prisma.$queryRaw<{ permission_id: string; module: string; submodule: string; action: string }[]>`
       SELECT DISTINCT p.id as permission_id, p.module, p.submodule, p.action
       FROM user_roles ur
       JOIN role_permissions rp ON rp.role_id = ur.role_id
       JOIN permissions p ON p.id = rp.permission_id
       WHERE ur.user_id = ${id}::uuid
-    ` as { permission_id: string; module: string; submodule: string; action: string }[];
+    `;
 
     const extraPermissions = await this.prisma.user_permissions.findMany({
       where: { user_id: id },
@@ -654,7 +693,14 @@ export class UsersService {
       source: 'user' as const,
     }));
 
-    const allPerms: Array<{ id: string; module: string; submodule: string; action: string; full: string; source: 'role' | 'user' }> = [...rolePermsFormatted];
+    const allPerms: Array<{
+      id: string;
+      module: string;
+      submodule: string;
+      action: string;
+      full: string;
+      source: 'role' | 'user';
+    }> = [...rolePermsFormatted];
     for (const extra of extraPermsFormatted) {
       if (!allPerms.some((p) => p.id === extra.id)) {
         allPerms.push(extra);
@@ -665,9 +711,13 @@ export class UsersService {
   }
 
   // ─── ASIGNAR PERMISOS EXTRA ─────────────────────────────
-  async assignExtraPermissions(id: string, data: {
-    permission_ids: string[];
-  }, granted_by: string) {
+  async assignExtraPermissions(
+    id: string,
+    data: {
+      permission_ids: string[];
+    },
+    granted_by: string,
+  ) {
     const user = await this.prisma.users.findFirst({
       where: { id, deleted_at: null },
     });
@@ -716,9 +766,13 @@ export class UsersService {
   }
 
   // ─── REEMPLAZAR PERMISOS EXTRA ─────────────────────────
-  async replaceExtraPermissions(id: string, data: {
-    permission_ids: string[];
-  }, granted_by: string) {
+  async replaceExtraPermissions(
+    id: string,
+    data: {
+      permission_ids: string[];
+    },
+    granted_by: string,
+  ) {
     const user = await this.prisma.users.findFirst({
       where: { id, deleted_at: null },
     });

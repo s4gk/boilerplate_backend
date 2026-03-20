@@ -2,7 +2,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from './users.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../email/email.service';
-import { NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 
 jest.mock('bcrypt');
@@ -111,8 +115,8 @@ describe('UsersService', () => {
     }).compile();
 
     service = module.get<UsersService>(UsersService);
-    prisma = module.get(PrismaService) as any;
-    emailService = module.get(EmailService) as any;
+    prisma = module.get(PrismaService);
+    emailService = module.get(EmailService);
   });
 
   afterEach(() => jest.clearAllMocks());
@@ -127,11 +131,13 @@ describe('UsersService', () => {
     const baseUser = {
       ...mockUser,
       user_roles: [
-        { role: { id: 'role-1', name: 'admin' }, assigned_at: new Date(), expires_at: null },
+        {
+          role: { id: 'role-1', name: 'admin' },
+          assigned_at: new Date(),
+          expires_at: null,
+        },
       ],
-      user_sedes: [
-        { sede: { id: 'sede-1', name: 'Main' }, area: null },
-      ],
+      user_sedes: [{ sede: { id: 'sede-1', name: 'Main' }, area: null }],
     };
 
     it('should return paginated users with defaults', async () => {
@@ -152,7 +158,12 @@ describe('UsersService', () => {
       expect(result.data[0].sedes).toEqual([{ id: 'sede-1', name: 'Main' }]);
       expect(result.data[0].user_roles).toBeUndefined();
       expect(result.data[0].user_sedes).toBeUndefined();
-      expect(result.meta).toEqual({ total: 1, page: 1, limit: 10, total_pages: 1 });
+      expect(result.meta).toEqual({
+        total: 1,
+        page: 1,
+        limit: 10,
+        total_pages: 1,
+      });
     });
 
     it('should apply pagination parameters', async () => {
@@ -164,7 +175,9 @@ describe('UsersService', () => {
       expect(prisma.users.findMany).toHaveBeenCalledWith(
         expect.objectContaining({ skip: 10, take: 5 }),
       );
-      expect(result.meta).toEqual(expect.objectContaining({ page: 3, limit: 5 }));
+      expect(result.meta).toEqual(
+        expect.objectContaining({ page: 3, limit: 5 }),
+      );
     });
 
     it('should clamp page to minimum 1', async () => {
@@ -240,13 +253,30 @@ describe('UsersService', () => {
       signature_url: null,
       area: { id: 'area-1', name: 'IT' },
       user_sedes: [
-        { sede_id: 's1', area_id: null, assigned_at: new Date(), sede: { id: 's1', name: 'Main' }, area: null },
+        {
+          sede_id: 's1',
+          area_id: null,
+          assigned_at: new Date(),
+          sede: { id: 's1', name: 'Main' },
+          area: null,
+        },
       ],
       user_roles: [
-        { assigned_at: new Date(), expires_at: null, role: { id: 'role-1', name: 'admin', description: 'Administrator' } },
+        {
+          assigned_at: new Date(),
+          expires_at: null,
+          role: { id: 'role-1', name: 'admin', description: 'Administrator' },
+        },
       ],
       user_permissions: [
-        { permission: { id: 'perm-1', module: 'users', submodule: 'manage', action: 'read' } },
+        {
+          permission: {
+            id: 'perm-1',
+            module: 'users',
+            submodule: 'manage',
+            action: 'read',
+          },
+        },
       ],
     };
 
@@ -260,10 +290,18 @@ describe('UsersService', () => {
           where: { id: USER_ID, deleted_at: null },
         }),
       );
-      expect(result.roles).toEqual([{ id: 'role-1', name: 'admin', description: 'Administrator' }]);
+      expect(result.roles).toEqual([
+        { id: 'role-1', name: 'admin', description: 'Administrator' },
+      ]);
       expect(result.sedes).toEqual([{ id: 's1', name: 'Main' }]);
       expect(result.extra_permissions).toEqual([
-        { id: 'perm-1', module: 'users', submodule: 'manage', action: 'read', full: 'users.manage.read' },
+        {
+          id: 'perm-1',
+          module: 'users',
+          submodule: 'manage',
+          action: 'read',
+          full: 'users.manage.read',
+        },
       ]);
       expect(result.user_roles).toBeUndefined();
       expect(result.user_sedes).toBeUndefined();
@@ -273,7 +311,9 @@ describe('UsersService', () => {
     it('should throw NotFoundException when user not found', async () => {
       prisma.users.findFirst.mockResolvedValue(null);
 
-      await expect(service.findOne('nonexistent')).rejects.toThrow(NotFoundException);
+      await expect(service.findOne('nonexistent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -333,9 +373,9 @@ describe('UsersService', () => {
 
     it('should append counter if username already taken', async () => {
       prisma.users.findFirst
-        .mockResolvedValueOnce(null)        // email check
+        .mockResolvedValueOnce(null) // email check
         .mockResolvedValueOnce({ id: 'x' }) // username 'janedoe' taken
-        .mockResolvedValueOnce(null);        // username 'janedoe1' free
+        .mockResolvedValueOnce(null); // username 'janedoe1' free
 
       await service.create({ email: 'jane.doe@company.com' }, ASSIGNED_BY);
 
@@ -347,7 +387,10 @@ describe('UsersService', () => {
     });
 
     it('should use provided password instead of generating one', async () => {
-      await service.create({ email: 'new@example.com', password: 'MyPass123!' }, ASSIGNED_BY);
+      await service.create(
+        { email: 'new@example.com', password: 'MyPass123!' },
+        ASSIGNED_BY,
+      );
 
       expect(bcrypt.hash).toHaveBeenCalledWith('MyPass123!', 12);
     });
@@ -379,10 +422,17 @@ describe('UsersService', () => {
     it('should assign role when role_id provided', async () => {
       prisma.user_roles.create.mockResolvedValue({});
 
-      await service.create({ email: 'new@example.com', role_id: 'role-1' }, ASSIGNED_BY);
+      await service.create(
+        { email: 'new@example.com', role_id: 'role-1' },
+        ASSIGNED_BY,
+      );
 
       expect(prisma.user_roles.create).toHaveBeenCalledWith({
-        data: { user_id: 'new-user-id', role_id: 'role-1', assigned_by: ASSIGNED_BY },
+        data: {
+          user_id: 'new-user-id',
+          role_id: 'role-1',
+          assigned_by: ASSIGNED_BY,
+        },
       });
     });
 
@@ -393,9 +443,14 @@ describe('UsersService', () => {
     });
 
     it('should not fail if welcome email fails', async () => {
-      emailService.sendWelcomeCredentials.mockRejectedValue(new Error('SMTP down'));
+      emailService.sendWelcomeCredentials.mockRejectedValue(
+        new Error('SMTP down'),
+      );
 
-      const result = await service.create({ email: 'new@example.com' }, ASSIGNED_BY);
+      const result = await service.create(
+        { email: 'new@example.com' },
+        ASSIGNED_BY,
+      );
 
       expect(result.id).toBe('new-user-id');
     });
@@ -432,7 +487,9 @@ describe('UsersService', () => {
     it('should throw NotFoundException when user not found', async () => {
       prisma.users.findFirst.mockResolvedValue(null);
 
-      await expect(service.update('nonexistent', { first_name: 'X' })).rejects.toThrow(NotFoundException);
+      await expect(
+        service.update('nonexistent', { first_name: 'X' }),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should replace sede when sede_id provided', async () => {
@@ -441,7 +498,9 @@ describe('UsersService', () => {
 
       await service.update(USER_ID, { sede_id: 'new-sede' });
 
-      expect(prisma.user_sedes.deleteMany).toHaveBeenCalledWith({ where: { user_id: USER_ID } });
+      expect(prisma.user_sedes.deleteMany).toHaveBeenCalledWith({
+        where: { user_id: USER_ID },
+      });
       expect(prisma.user_sedes.create).toHaveBeenCalledWith({
         data: { user_id: USER_ID, sede_id: 'new-sede', area_id: null },
       });
@@ -462,9 +521,15 @@ describe('UsersService', () => {
 
       await service.update(USER_ID, { role_id: 'new-role' }, ASSIGNED_BY);
 
-      expect(prisma.user_roles.deleteMany).toHaveBeenCalledWith({ where: { user_id: USER_ID } });
+      expect(prisma.user_roles.deleteMany).toHaveBeenCalledWith({
+        where: { user_id: USER_ID },
+      });
       expect(prisma.user_roles.create).toHaveBeenCalledWith({
-        data: { user_id: USER_ID, role_id: 'new-role', assigned_by: ASSIGNED_BY },
+        data: {
+          user_id: USER_ID,
+          role_id: 'new-role',
+          assigned_by: ASSIGNED_BY,
+        },
       });
     });
   });
@@ -483,14 +548,18 @@ describe('UsersService', () => {
         where: { id: USER_ID },
         data: { deleted_at: expect.any(Date), is_active: false },
       });
-      expect(prisma.user_sessions.deleteMany).toHaveBeenCalledWith({ where: { user_id: USER_ID } });
+      expect(prisma.user_sessions.deleteMany).toHaveBeenCalledWith({
+        where: { user_id: USER_ID },
+      });
       expect(result).toEqual({ message: 'Usuario eliminado exitosamente' });
     });
 
     it('should throw NotFoundException when user not found', async () => {
       prisma.users.findFirst.mockResolvedValue(null);
 
-      await expect(service.remove('nonexistent')).rejects.toThrow(NotFoundException);
+      await expect(service.remove('nonexistent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should not delete already soft-deleted users (filtered by deleted_at: null)', async () => {
@@ -516,7 +585,11 @@ describe('UsersService', () => {
     });
 
     it('should change password successfully', async () => {
-      const result = await service.changePassword(USER_ID, { new_password: 'NewPass123!' }, ASSIGNED_BY);
+      const result = await service.changePassword(
+        USER_ID,
+        { new_password: 'NewPass123!' },
+        ASSIGNED_BY,
+      );
 
       expect(bcrypt.hash).toHaveBeenCalledWith('NewPass123!', 12);
       expect(prisma.password_history.create).toHaveBeenCalledWith({
@@ -530,14 +603,20 @@ describe('UsersService', () => {
         where: { id: USER_ID },
         data: { password_hash: 'new-hashed' },
       });
-      expect(result).toEqual({ message: 'Contrasena actualizada exitosamente' });
+      expect(result).toEqual({
+        message: 'Contrasena actualizada exitosamente',
+      });
     });
 
     it('should throw NotFoundException when user not found', async () => {
       prisma.users.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.changePassword('nonexistent', { new_password: 'x' }, ASSIGNED_BY),
+        service.changePassword(
+          'nonexistent',
+          { new_password: 'x' },
+          ASSIGNED_BY,
+        ),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -545,7 +624,11 @@ describe('UsersService', () => {
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
       await expect(
-        service.changePassword(USER_ID, { new_password: 'same-password' }, ASSIGNED_BY),
+        service.changePassword(
+          USER_ID,
+          { new_password: 'same-password' },
+          ASSIGNED_BY,
+        ),
       ).rejects.toThrow(BadRequestException);
     });
 
@@ -555,16 +638,24 @@ describe('UsersService', () => {
         { password_hash: 'old-hash-2' },
       ]);
       (bcrypt.compare as jest.Mock)
-        .mockResolvedValueOnce(false)  // current hash
-        .mockResolvedValueOnce(true);  // old-hash-1 matches
+        .mockResolvedValueOnce(false) // current hash
+        .mockResolvedValueOnce(true); // old-hash-1 matches
 
       await expect(
-        service.changePassword(USER_ID, { new_password: 'reused-pass' }, ASSIGNED_BY),
+        service.changePassword(
+          USER_ID,
+          { new_password: 'reused-pass' },
+          ASSIGNED_BY,
+        ),
       ).rejects.toThrow(BadRequestException);
     });
 
     it('should check up to 5 history entries', async () => {
-      await service.changePassword(USER_ID, { new_password: 'new' }, ASSIGNED_BY);
+      await service.changePassword(
+        USER_ID,
+        { new_password: 'new' },
+        ASSIGNED_BY,
+      );
 
       expect(prisma.password_history.findMany).toHaveBeenCalledWith(
         expect.objectContaining({ take: 5 }),
@@ -576,7 +667,10 @@ describe('UsersService', () => {
 
   describe('toggleStatus', () => {
     it('should toggle from active to inactive', async () => {
-      prisma.users.findFirst.mockResolvedValue({ ...mockUser, is_active: true });
+      prisma.users.findFirst.mockResolvedValue({
+        ...mockUser,
+        is_active: true,
+      });
       prisma.users.update.mockResolvedValue({ id: USER_ID, is_active: false });
 
       const result = await service.toggleStatus(USER_ID);
@@ -586,11 +680,17 @@ describe('UsersService', () => {
         data: { is_active: false },
         select: { id: true, is_active: true },
       });
-      expect(result).toEqual({ message: 'Usuario desactivado', is_active: false });
+      expect(result).toEqual({
+        message: 'Usuario desactivado',
+        is_active: false,
+      });
     });
 
     it('should toggle from inactive to active', async () => {
-      prisma.users.findFirst.mockResolvedValue({ ...mockUser, is_active: false });
+      prisma.users.findFirst.mockResolvedValue({
+        ...mockUser,
+        is_active: false,
+      });
       prisma.users.update.mockResolvedValue({ id: USER_ID, is_active: true });
 
       const result = await service.toggleStatus(USER_ID);
@@ -606,7 +706,9 @@ describe('UsersService', () => {
     it('should throw NotFoundException when user not found', async () => {
       prisma.users.findFirst.mockResolvedValue(null);
 
-      await expect(service.toggleStatus('nonexistent')).rejects.toThrow(NotFoundException);
+      await expect(service.toggleStatus('nonexistent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -618,21 +720,33 @@ describe('UsersService', () => {
       const expiresAt = new Date('2030-01-01');
       prisma.users.findFirst.mockResolvedValue({
         user_roles: [
-          { assigned_at: assignedAt, expires_at: expiresAt, role: { id: 'role-1', name: 'admin', description: 'Admin role' } },
+          {
+            assigned_at: assignedAt,
+            expires_at: expiresAt,
+            role: { id: 'role-1', name: 'admin', description: 'Admin role' },
+          },
         ],
       });
 
       const result = await service.getUserRoles(USER_ID);
 
       expect(result).toEqual([
-        { id: 'role-1', name: 'admin', description: 'Admin role', assigned_at: assignedAt, expires_at: expiresAt },
+        {
+          id: 'role-1',
+          name: 'admin',
+          description: 'Admin role',
+          assigned_at: assignedAt,
+          expires_at: expiresAt,
+        },
       ]);
     });
 
     it('should throw NotFoundException when user not found', async () => {
       prisma.users.findFirst.mockResolvedValue(null);
 
-      await expect(service.getUserRoles('nonexistent')).rejects.toThrow(NotFoundException);
+      await expect(service.getUserRoles('nonexistent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -641,18 +755,35 @@ describe('UsersService', () => {
   describe('assignRoles', () => {
     it('should assign roles successfully', async () => {
       prisma.users.findFirst.mockResolvedValue(mockUser);
-      prisma.roles.findMany.mockResolvedValue([{ id: 'role-1' }, { id: 'role-2' }]);
+      prisma.roles.findMany.mockResolvedValue([
+        { id: 'role-1' },
+        { id: 'role-2' },
+      ]);
       prisma.user_roles.createMany.mockResolvedValue({ count: 2 });
 
-      const result = await service.assignRoles(USER_ID, { role_ids: ['role-1', 'role-2'] }, ASSIGNED_BY);
+      const result = await service.assignRoles(
+        USER_ID,
+        { role_ids: ['role-1', 'role-2'] },
+        ASSIGNED_BY,
+      );
 
       expect(prisma.roles.findMany).toHaveBeenCalledWith({
         where: { id: { in: ['role-1', 'role-2'] }, is_active: true },
       });
       expect(prisma.user_roles.createMany).toHaveBeenCalledWith({
         data: [
-          { user_id: USER_ID, role_id: 'role-1', assigned_by: ASSIGNED_BY, expires_at: null },
-          { user_id: USER_ID, role_id: 'role-2', assigned_by: ASSIGNED_BY, expires_at: null },
+          {
+            user_id: USER_ID,
+            role_id: 'role-1',
+            assigned_by: ASSIGNED_BY,
+            expires_at: null,
+          },
+          {
+            user_id: USER_ID,
+            role_id: 'role-2',
+            assigned_by: ASSIGNED_BY,
+            expires_at: null,
+          },
         ],
         skipDuplicates: true,
       });
@@ -664,7 +795,11 @@ describe('UsersService', () => {
       prisma.roles.findMany.mockResolvedValue([{ id: 'role-1' }]);
 
       await expect(
-        service.assignRoles(USER_ID, { role_ids: ['role-1', 'role-nonexistent'] }, ASSIGNED_BY),
+        service.assignRoles(
+          USER_ID,
+          { role_ids: ['role-1', 'role-nonexistent'] },
+          ASSIGNED_BY,
+        ),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -672,7 +807,11 @@ describe('UsersService', () => {
       prisma.users.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.assignRoles('nonexistent', { role_ids: ['role-1'] }, ASSIGNED_BY),
+        service.assignRoles(
+          'nonexistent',
+          { role_ids: ['role-1'] },
+          ASSIGNED_BY,
+        ),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -688,9 +827,7 @@ describe('UsersService', () => {
       );
 
       expect(prisma.user_roles.createMany).toHaveBeenCalledWith({
-        data: [
-          expect.objectContaining({ expires_at: new Date('2030-12-31') }),
-        ],
+        data: [expect.objectContaining({ expires_at: new Date('2030-12-31') })],
         skipDuplicates: true,
       });
     });
@@ -714,7 +851,9 @@ describe('UsersService', () => {
     it('should throw NotFoundException when user not found', async () => {
       prisma.users.findFirst.mockResolvedValue(null);
 
-      await expect(service.removeRole('nonexistent', 'role-1')).rejects.toThrow(NotFoundException);
+      await expect(service.removeRole('nonexistent', 'role-1')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -724,11 +863,30 @@ describe('UsersService', () => {
     it('should combine role and extra permissions without duplicates', async () => {
       prisma.users.findFirst.mockResolvedValue(mockUser);
       prisma.$queryRaw.mockResolvedValue([
-        { permission_id: 'perm-1', module: 'users', submodule: 'manage', action: 'read' },
+        {
+          permission_id: 'perm-1',
+          module: 'users',
+          submodule: 'manage',
+          action: 'read',
+        },
       ]);
       prisma.user_permissions.findMany.mockResolvedValue([
-        { permission: { id: 'perm-1', module: 'users', submodule: 'manage', action: 'read' } },
-        { permission: { id: 'perm-2', module: 'users', submodule: 'manage', action: 'write' } },
+        {
+          permission: {
+            id: 'perm-1',
+            module: 'users',
+            submodule: 'manage',
+            action: 'read',
+          },
+        },
+        {
+          permission: {
+            id: 'perm-2',
+            module: 'users',
+            submodule: 'manage',
+            action: 'write',
+          },
+        },
       ]);
 
       const result = await service.getUserPermissions(USER_ID);
@@ -756,7 +914,9 @@ describe('UsersService', () => {
     it('should throw NotFoundException when user not found', async () => {
       prisma.users.findFirst.mockResolvedValue(null);
 
-      await expect(service.getUserPermissions('nonexistent')).rejects.toThrow(NotFoundException);
+      await expect(service.getUserPermissions('nonexistent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -765,7 +925,10 @@ describe('UsersService', () => {
   describe('assignExtraPermissions', () => {
     it('should assign extra permissions successfully', async () => {
       prisma.users.findFirst.mockResolvedValue(mockUser);
-      prisma.permissions.findMany.mockResolvedValue([{ id: 'perm-1' }, { id: 'perm-2' }]);
+      prisma.permissions.findMany.mockResolvedValue([
+        { id: 'perm-1' },
+        { id: 'perm-2' },
+      ]);
       prisma.user_permissions.createMany.mockResolvedValue({ count: 2 });
 
       const result = await service.assignExtraPermissions(
@@ -779,12 +942,22 @@ describe('UsersService', () => {
       });
       expect(prisma.user_permissions.createMany).toHaveBeenCalledWith({
         data: [
-          { user_id: USER_ID, permission_id: 'perm-1', granted_by: ASSIGNED_BY },
-          { user_id: USER_ID, permission_id: 'perm-2', granted_by: ASSIGNED_BY },
+          {
+            user_id: USER_ID,
+            permission_id: 'perm-1',
+            granted_by: ASSIGNED_BY,
+          },
+          {
+            user_id: USER_ID,
+            permission_id: 'perm-2',
+            granted_by: ASSIGNED_BY,
+          },
         ],
         skipDuplicates: true,
       });
-      expect(result).toEqual({ message: 'Permisos extra asignados exitosamente' });
+      expect(result).toEqual({
+        message: 'Permisos extra asignados exitosamente',
+      });
     });
 
     it('should throw NotFoundException when permission not found', async () => {
@@ -792,7 +965,11 @@ describe('UsersService', () => {
       prisma.permissions.findMany.mockResolvedValue([{ id: 'perm-1' }]);
 
       await expect(
-        service.assignExtraPermissions(USER_ID, { permission_ids: ['perm-1', 'perm-nonexistent'] }, ASSIGNED_BY),
+        service.assignExtraPermissions(
+          USER_ID,
+          { permission_ids: ['perm-1', 'perm-nonexistent'] },
+          ASSIGNED_BY,
+        ),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -800,7 +977,11 @@ describe('UsersService', () => {
       prisma.users.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.assignExtraPermissions('nonexistent', { permission_ids: ['perm-1'] }, ASSIGNED_BY),
+        service.assignExtraPermissions(
+          'nonexistent',
+          { permission_ids: ['perm-1'] },
+          ASSIGNED_BY,
+        ),
       ).rejects.toThrow(NotFoundException);
     });
   });
@@ -815,9 +996,13 @@ describe('UsersService', () => {
       const result = await service.removeExtraPermission(USER_ID, 'perm-1');
 
       expect(prisma.user_permissions.delete).toHaveBeenCalledWith({
-        where: { user_id_permission_id: { user_id: USER_ID, permission_id: 'perm-1' } },
+        where: {
+          user_id_permission_id: { user_id: USER_ID, permission_id: 'perm-1' },
+        },
       });
-      expect(result).toEqual({ message: 'Permiso extra removido exitosamente' });
+      expect(result).toEqual({
+        message: 'Permiso extra removido exitosamente',
+      });
     });
 
     it('should throw NotFoundException when user not found', async () => {
@@ -834,7 +1019,10 @@ describe('UsersService', () => {
   describe('replaceExtraPermissions', () => {
     it('should delete all existing and create new permissions', async () => {
       prisma.users.findFirst.mockResolvedValue(mockUser);
-      prisma.permissions.findMany.mockResolvedValue([{ id: 'perm-3' }, { id: 'perm-4' }]);
+      prisma.permissions.findMany.mockResolvedValue([
+        { id: 'perm-3' },
+        { id: 'perm-4' },
+      ]);
       prisma.user_permissions.deleteMany.mockResolvedValue({});
       prisma.user_permissions.createMany.mockResolvedValue({ count: 2 });
 
@@ -844,25 +1032,45 @@ describe('UsersService', () => {
         ASSIGNED_BY,
       );
 
-      expect(prisma.user_permissions.deleteMany).toHaveBeenCalledWith({ where: { user_id: USER_ID } });
+      expect(prisma.user_permissions.deleteMany).toHaveBeenCalledWith({
+        where: { user_id: USER_ID },
+      });
       expect(prisma.user_permissions.createMany).toHaveBeenCalledWith({
         data: [
-          { user_id: USER_ID, permission_id: 'perm-3', granted_by: ASSIGNED_BY },
-          { user_id: USER_ID, permission_id: 'perm-4', granted_by: ASSIGNED_BY },
+          {
+            user_id: USER_ID,
+            permission_id: 'perm-3',
+            granted_by: ASSIGNED_BY,
+          },
+          {
+            user_id: USER_ID,
+            permission_id: 'perm-4',
+            granted_by: ASSIGNED_BY,
+          },
         ],
       });
-      expect(result).toEqual({ message: 'Permisos extra actualizados exitosamente' });
+      expect(result).toEqual({
+        message: 'Permisos extra actualizados exitosamente',
+      });
     });
 
     it('should clear all permissions when given empty array', async () => {
       prisma.users.findFirst.mockResolvedValue(mockUser);
       prisma.user_permissions.deleteMany.mockResolvedValue({});
 
-      const result = await service.replaceExtraPermissions(USER_ID, { permission_ids: [] }, ASSIGNED_BY);
+      const result = await service.replaceExtraPermissions(
+        USER_ID,
+        { permission_ids: [] },
+        ASSIGNED_BY,
+      );
 
-      expect(prisma.user_permissions.deleteMany).toHaveBeenCalledWith({ where: { user_id: USER_ID } });
+      expect(prisma.user_permissions.deleteMany).toHaveBeenCalledWith({
+        where: { user_id: USER_ID },
+      });
       expect(prisma.user_permissions.createMany).not.toHaveBeenCalled();
-      expect(result).toEqual({ message: 'Permisos extra actualizados exitosamente' });
+      expect(result).toEqual({
+        message: 'Permisos extra actualizados exitosamente',
+      });
     });
 
     it('should throw NotFoundException when permission not found', async () => {
@@ -870,7 +1078,11 @@ describe('UsersService', () => {
       prisma.permissions.findMany.mockResolvedValue([{ id: 'perm-3' }]);
 
       await expect(
-        service.replaceExtraPermissions(USER_ID, { permission_ids: ['perm-3', 'perm-nonexistent'] }, ASSIGNED_BY),
+        service.replaceExtraPermissions(
+          USER_ID,
+          { permission_ids: ['perm-3', 'perm-nonexistent'] },
+          ASSIGNED_BY,
+        ),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -878,7 +1090,11 @@ describe('UsersService', () => {
       prisma.users.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.replaceExtraPermissions('nonexistent', { permission_ids: ['perm-1'] }, ASSIGNED_BY),
+        service.replaceExtraPermissions(
+          'nonexistent',
+          { permission_ids: ['perm-1'] },
+          ASSIGNED_BY,
+        ),
       ).rejects.toThrow(NotFoundException);
     });
   });
@@ -887,7 +1103,10 @@ describe('UsersService', () => {
 
   describe('getAreas', () => {
     it('should return active areas sorted by name', async () => {
-      const areas = [{ id: 'area-1', name: 'Engineering' }, { id: 'area-2', name: 'HR' }];
+      const areas = [
+        { id: 'area-1', name: 'Engineering' },
+        { id: 'area-2', name: 'HR' },
+      ];
       prisma.areas.findMany.mockResolvedValue(areas);
 
       const result = await service.getAreas();
@@ -905,7 +1124,10 @@ describe('UsersService', () => {
 
   describe('getSedes', () => {
     it('should return active sedes sorted by name', async () => {
-      const sedes = [{ id: 'sede-1', name: 'Bogota' }, { id: 'sede-2', name: 'Medellin' }];
+      const sedes = [
+        { id: 'sede-1', name: 'Bogota' },
+        { id: 'sede-2', name: 'Medellin' },
+      ];
       prisma.sedes.findMany.mockResolvedValue(sedes);
 
       const result = await service.getSedes();

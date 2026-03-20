@@ -1,5 +1,21 @@
-import { Controller, Get, Put, Delete, Body, Param, Query, UseGuards, Req } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Put,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  Req,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { SettingsService } from './settings.service';
 import { AuditService } from '../common/services/audit.service';
 import { JwtGuard } from '../auth/guards/jwt.guard';
@@ -20,7 +36,11 @@ export class SettingsController {
   ) {}
 
   private auditCtx(userId: string, req: Request) {
-    return { user_id: userId, ip_address: req.ip, user_agent: req.headers['user-agent'] as string };
+    return {
+      user_id: userId,
+      ip_address: req.ip,
+      user_agent: req.headers['user-agent'] as string,
+    };
   }
 
   @RequirePermission('sistema', 'configuracion', 'ver')
@@ -54,7 +74,9 @@ export class SettingsController {
 
     this.auditService.log({
       context: this.auditCtx(userId, req),
-      module: 'sistema', submodule: 'configuracion', action: 'editar',
+      module: 'sistema',
+      submodule: 'configuracion',
+      action: 'editar',
       new_data: { key: body.key, value: body.value },
     });
 
@@ -74,7 +96,9 @@ export class SettingsController {
 
     this.auditService.log({
       context: this.auditCtx(userId, req),
-      module: 'sistema', submodule: 'configuracion', action: 'editar_masivo',
+      module: 'sistema',
+      submodule: 'configuracion',
+      action: 'editar_masivo',
       new_data: { count: body.settings.length },
     });
 
@@ -94,7 +118,9 @@ export class SettingsController {
 
     this.auditService.log({
       context: this.auditCtx(userId, req),
-      module: 'sistema', submodule: 'configuracion', action: 'eliminar',
+      module: 'sistema',
+      submodule: 'configuracion',
+      action: 'eliminar',
       new_data: { key },
     });
 

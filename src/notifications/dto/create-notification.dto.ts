@@ -16,7 +16,10 @@ export class CreateNotificationDto {
   @MaxLength(500)
   message: string;
 
-  @ApiPropertyOptional({ example: 'info', enum: ['info', 'success', 'warning', 'error'] })
+  @ApiPropertyOptional({
+    example: 'info',
+    enum: ['info', 'success', 'warning', 'error'],
+  })
   @IsOptional()
   @IsString()
   type?: string;

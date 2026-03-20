@@ -22,6 +22,45 @@ async function bootstrap() {
   // WebSocket adapter
   app.useWebSocketAdapter(new IoAdapter(app));
 
+  // ─── CORS (debe ir ANTES de helmet) ───────────────────
+  const corsOrigins = process.env.CORS_ORIGINS
+    ? process.env.CORS_ORIGINS.split(',').map((o) => o.trim())
+    : [];
+
+  // IPs permitidas con cualquier puerto (ej: "10.0.0.1,192.168.1.1")
+  const allowedIpPatterns = (process.env.ALLOWED_IPS || '')
+    .split(',')
+    .map((ip) => ip.trim())
+    .filter(Boolean)
+    .map(
+      (ip) => new RegExp(`^https?:\\/\\/${ip.replace(/\./g, '\\.')}(:\\d+)?$`),
+    );
+
+  app.enableCors({
+    origin: (origin, callback) => {
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      const isAllowedByEnv = corsOrigins.includes(origin);
+      const isAllowedByIp = allowedIpPatterns.some((re) => re.test(origin));
+
+      if (isAllowedByEnv || isAllowedByIp) {
+        return callback(null, true);
+      }
+
+      logger.error(`Origin no permitido por CORS: ${origin}`);
+      return callback(
+        new Error(`Origin no permitido por CORS: ${origin}`),
+        false,
+      );
+    },
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    credentials: true,
+    optionsSuccessStatus: 204,
+  });
+
   // Security headers (X-Content-Type-Options, X-Frame-Options, HSTS, etc.)
   app.use(helmet());
 
@@ -41,40 +80,6 @@ async function bootstrap() {
 
   // Filtro global que estandariza TODAS las respuestas de error
   app.useGlobalFilters(new AllExceptionsFilter());
-
-  // ─── CORS ─────────────────────────────────────────────
-  const corsOrigins = process.env.CORS_ORIGINS
-    ? process.env.CORS_ORIGINS.split(',').map((o) => o.trim())
-    : [];
-
-  // IPs permitidas con cualquier puerto (ej: "10.0.0.1,192.168.1.1")
-  const allowedIpPatterns = (process.env.ALLOWED_IPS || '')
-    .split(',')
-    .map((ip) => ip.trim())
-    .filter(Boolean)
-    .map((ip) => new RegExp(`^https?:\\/\\/${ip.replace(/\./g, '\\.')}(:\\d+)?$`));
-
-  app.enableCors({
-    origin: (origin, callback) => {
-      if (!origin) {
-        return callback(null, true);
-      }
-
-      const isAllowedByEnv = corsOrigins.includes(origin);
-      const isAllowedByIp = allowedIpPatterns.some((re) => re.test(origin));
-
-      if (isAllowedByEnv || isAllowedByIp) {
-        return callback(null, true);
-      }
-
-      logger.error(`Origin no permitido por CORS: ${origin}`);
-      return callback(new Error(`Origin no permitido por CORS: ${origin}`), false);
-    },
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
-    credentials: true,
-    optionsSuccessStatus: 204,
-  });
 
   // Swagger solo disponible fuera de produccion
   if (process.env.NODE_ENV !== 'production') {

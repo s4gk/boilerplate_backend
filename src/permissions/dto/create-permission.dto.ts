@@ -12,7 +12,10 @@ export class CreatePermissionDto {
   @MaxLength(100)
   submodule: string;
 
-  @ApiProperty({ example: 'ver', description: 'Acción (ver, crear, editar, eliminar)' })
+  @ApiProperty({
+    example: 'ver',
+    description: 'Acción (ver, crear, editar, eliminar)',
+  })
   @IsString()
   @MaxLength(100)
   action: string;

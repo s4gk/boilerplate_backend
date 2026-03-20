@@ -31,7 +31,10 @@ export class NotificationsService {
     return notification;
   }
 
-  async findAll(user_id: string, query: { page?: number; limit?: number; unread_only?: boolean }) {
+  async findAll(
+    user_id: string,
+    query: { page?: number; limit?: number; unread_only?: boolean },
+  ) {
     const page = Math.max(1, query.page || 1);
     const limit = Math.min(50, Math.max(1, query.limit || 20));
     const skip = (page - 1) * limit;

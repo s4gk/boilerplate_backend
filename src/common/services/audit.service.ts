@@ -42,19 +42,17 @@ export class AuditService {
     }
   }
 
-  async findAll(
-    query: {
-      page?: number;
-      limit?: number;
-      module?: string;
-      submodule?: string;
-      action?: string;
-      user_id?: string;
-      resource_id?: string;
-      date_from?: string;
-      date_to?: string;
-    },
-  ): Promise<PaginatedResult<any>> {
+  async findAll(query: {
+    page?: number;
+    limit?: number;
+    module?: string;
+    submodule?: string;
+    action?: string;
+    user_id?: string;
+    resource_id?: string;
+    date_from?: string;
+    date_to?: string;
+  }): Promise<PaginatedResult<any>> {
     const where: any = {};
 
     if (query.module) where.module = query.module;
@@ -69,12 +67,23 @@ export class AuditService {
       if (query.date_to) where.created_at.lte = new Date(query.date_to);
     }
 
-    return paginate(this.prisma.audit_log, {
-      where,
-      orderBy: { created_at: 'desc' },
-      include: {
-        user: { select: { id: true, email: true, first_name: true, last_name: true } },
+    return paginate(
+      this.prisma.audit_log,
+      {
+        where,
+        orderBy: { created_at: 'desc' },
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              first_name: true,
+              last_name: true,
+            },
+          },
+        },
       },
-    }, { page: query.page, limit: query.limit });
+      { page: query.page, limit: query.limit },
+    );
   }
 }

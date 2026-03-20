@@ -44,9 +44,9 @@ describe('DashboardService', () => {
   describe('getStats', () => {
     it('should return aggregated stats', async () => {
       mockPrisma.users.count
-        .mockResolvedValueOnce(100)  // totalUsers
-        .mockResolvedValueOnce(80)   // activeUsers
-        .mockResolvedValueOnce(20);  // inactiveUsers
+        .mockResolvedValueOnce(100) // totalUsers
+        .mockResolvedValueOnce(80) // activeUsers
+        .mockResolvedValueOnce(20); // inactiveUsers
       mockPrisma.roles.count.mockResolvedValue(5);
       mockPrisma.permissions.count.mockResolvedValue(30);
 
@@ -58,10 +58,18 @@ describe('DashboardService', () => {
         permissions: 30,
       });
 
-      expect(mockPrisma.users.count).toHaveBeenCalledWith({ where: { deleted_at: null } });
-      expect(mockPrisma.users.count).toHaveBeenCalledWith({ where: { deleted_at: null, is_active: true } });
-      expect(mockPrisma.users.count).toHaveBeenCalledWith({ where: { deleted_at: null, is_active: false } });
-      expect(mockPrisma.roles.count).toHaveBeenCalledWith({ where: { is_active: true } });
+      expect(mockPrisma.users.count).toHaveBeenCalledWith({
+        where: { deleted_at: null },
+      });
+      expect(mockPrisma.users.count).toHaveBeenCalledWith({
+        where: { deleted_at: null, is_active: true },
+      });
+      expect(mockPrisma.users.count).toHaveBeenCalledWith({
+        where: { deleted_at: null, is_active: false },
+      });
+      expect(mockPrisma.roles.count).toHaveBeenCalledWith({
+        where: { is_active: true },
+      });
       expect(mockPrisma.permissions.count).toHaveBeenCalledWith();
     });
   });
@@ -73,8 +81,16 @@ describe('DashboardService', () => {
         { success: false, _count: 10 },
       ]);
       mockPrisma.$queryRaw.mockResolvedValue([
-        { date: new Date('2026-03-15'), successful: BigInt(30), failed: BigInt(5) },
-        { date: new Date('2026-03-14'), successful: BigInt(20), failed: BigInt(5) },
+        {
+          date: new Date('2026-03-15'),
+          successful: BigInt(30),
+          failed: BigInt(5),
+        },
+        {
+          date: new Date('2026-03-14'),
+          successful: BigInt(20),
+          failed: BigInt(5),
+        },
       ]);
 
       const result = await service.getLoginActivity(7);
@@ -118,7 +134,12 @@ describe('DashboardService', () => {
         action: 'create',
         resource_id: 'u1',
         created_at: new Date(),
-        user: { id: 'u1', email: 'admin@test.com', first_name: 'Admin', last_name: 'User' },
+        user: {
+          id: 'u1',
+          email: 'admin@test.com',
+          first_name: 'Admin',
+          last_name: 'User',
+        },
       },
     ];
 
@@ -139,7 +160,12 @@ describe('DashboardService', () => {
           resource_id: true,
           created_at: true,
           user: {
-            select: { id: true, email: true, first_name: true, last_name: true },
+            select: {
+              id: true,
+              email: true,
+              first_name: true,
+              last_name: true,
+            },
           },
         },
       });

@@ -23,7 +23,8 @@ export class BodyParserExceptionFilter implements ExceptionFilter {
     response.status(status).json({
       statusCode: status,
       error: 'Bad Request',
-      message: 'Se detecto un body multipart enviado como JSON. Si usas FormData, no envies el header Content-Type manualmente; deja que el cliente envie multipart/form-data con boundary.',
+      message:
+        'Se detecto un body multipart enviado como JSON. Si usas FormData, no envies el header Content-Type manualmente; deja que el cliente envie multipart/form-data con boundary.',
       path: request.url,
       method: request.method,
     });
@@ -39,8 +40,12 @@ export class BodyParserExceptionFilter implements ExceptionFilter {
     }
 
     const message = (payload as { message?: unknown }).message;
-    const normalized = Array.isArray(message) ? message.join(' ') : String(message ?? '');
+    const normalized = Array.isArray(message)
+      ? message.join(' ')
+      : String(message ?? '');
 
-    return normalized.includes('Unexpected token') && normalized.includes('WebK');
+    return (
+      normalized.includes('Unexpected token') && normalized.includes('WebK')
+    );
   }
 }

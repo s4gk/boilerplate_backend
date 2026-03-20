@@ -43,7 +43,7 @@ export class UploadsService {
     if (!isValid) {
       throw new BadRequestException(
         `El contenido del archivo no corresponde al tipo declarado (${file.mimetype}). ` +
-        'Asegurate de que el archivo no este corrupto o renombrado.',
+          'Asegurate de que el archivo no este corrupto o renombrado.',
       );
     }
   }

@@ -43,7 +43,12 @@ export class JsonLoggerService extends ConsoleLogger implements LoggerService {
     }
   }
 
-  private printJson(level: string, message: any, context?: string, stack?: string) {
+  private printJson(
+    level: string,
+    message: any,
+    context?: string,
+    stack?: string,
+  ) {
     const entry: Record<string, any> = {
       timestamp: new Date().toISOString(),
       level,

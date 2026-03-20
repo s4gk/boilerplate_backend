@@ -46,7 +46,9 @@ export class NotificationsGateway
   }
 
   handleDisconnect(client: Socket) {
-    this.logger.debug(`Client disconnected: ${client.data?.userId || 'unknown'}`);
+    this.logger.debug(
+      `Client disconnected: ${client.data?.userId || 'unknown'}`,
+    );
   }
 
   sendToUser(userId: string, event: string, data: any) {

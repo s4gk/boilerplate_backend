@@ -1,14 +1,14 @@
 export function validateEnv() {
   const required: Record<string, string[]> = {
-    'Database': ['DATABASE_URL'],
-    'Auth': ['JWT_SECRET'],
+    Database: ['DATABASE_URL'],
+    Auth: ['JWT_SECRET'],
     'Email (SMTP)': ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS'],
   };
 
   const recommended: Record<string, string[]> = {
-    'CORS': ['ALLOWED_IPS'],
-    'Server': ['PORT', 'NODE_ENV'],
-    'Branding': ['COMPANY_NAME'],
+    CORS: ['ALLOWED_IPS'],
+    Server: ['PORT', 'NODE_ENV'],
+    Branding: ['COMPANY_NAME'],
   };
 
   const missing: string[] = [];
@@ -24,7 +24,7 @@ export function validateEnv() {
   if (missing.length > 0) {
     throw new Error(
       `\nMissing required environment variables:\n${missing.join('\n')}\n\n` +
-      'Set them in your .env file or environment before starting the application.\n',
+        'Set them in your .env file or environment before starting the application.\n',
     );
   }
 
